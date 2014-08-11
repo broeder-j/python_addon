@@ -1,0 +1,8 @@
+v005: fixed multiple bugs, started python_addon repo
+
+v004: added aesPickle (py27, py3)
+
+v003: fixed parameter / added doc string
+
+v002: added ASSERT
+
