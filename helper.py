@@ -16,6 +16,9 @@ def readable(name):
     """
     return os.access(name, os.R_OK)
 
+def abspath(file_):
+    return os.path.dirname(os.path.abspath(file_))
+
 #------------------- zip with index  ------------------- 
 def zipi(l):
     """

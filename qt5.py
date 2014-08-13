@@ -13,7 +13,7 @@ qt_binding = "none"
 
 try:
     from PyQt5.QtCore import *
-    #~ from PyQt5.QtGui import * #is it needed?
+    from PyQt5.QtGui import *
     from PyQt5.QtWidgets import *
     qt_binding = "PyQt5"
     GREEN("PyQt5 loaded")
