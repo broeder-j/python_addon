@@ -1,3 +1,5 @@
+v006: added svg module (py27 py3) not imported automatic
+
 v005: fixed multiple bugs, started python_addon repo
 
 v004: added aesPickle (py27, py3)
