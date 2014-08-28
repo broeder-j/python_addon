@@ -13,31 +13,64 @@ def unpack_lazy(data):
     """
     Enables some shorthands for the interface.
     """
+    if "dir" in data:
+        if data["dir"] in ["u", "up"]:
+            data["xy1"] = (0, 1)
+            data["xy2"] = (0, 0)
+        if data["dir"] in ["d", "down"]:
+            data["xy1"] = (0, 0)
+            data["xy2"] = (0, 1)
+        if data["dir"] in ["r", "right"]:
+            data["xy1"] = (0, 0)
+            data["xy2"] = (1, 0)
+        if data["dir"] in ["l", "left"]:
+            data["xy1"] = (1, 0)
+            data["xy2"] = (0, 0)
+        
+        if data["dir"] in ["dl", "ld"]:
+            data["xy1"] = (1, 0)
+            data["xy2"] = (0, 1)
+        if data["dir"] in ["dr", "rd"]:
+            data["xy1"] = (0, 0)
+            data["xy2"] = (1, 1)
+        if data["dir"] in ["ul", "lu"]:
+            data["xy1"] = (1, 1)
+            data["xy2"] = (0, 0)
+        if data["dir"] in ["ur", "ru"]:
+            data["xy1"] = (0, 1)
+            data["xy2"] = (1, 0)
+        
+        del data["dir"]
     if "xy" in data:
         data["x"] = data["xy"][0]
         data["y"] = data["xy"][1]
         del data["xy"]
+        
     if "cxy" in data:
         data["cx"] = data["cxy"][0]
         data["cy"] = data["cxy"][1]
         del data["cxy"]
+        
     if "rxy" in data:
         data["rx"] = data["rxy"][0]
         data["ry"] = data["rxy"][1]
         del data["rxy"]
+        
     if "xy1" in data:
         data["x1"] = data["xy1"][0]
         data["y1"] = data["xy1"][1]
         del data["xy1"]
+        
     if "xy2" in data:
         data["x2"] = data["xy2"][0]
         data["y2"] = data["xy2"][1]
         del data["xy2"]
+        
     if "size" in data:
         data["width"] = data["size"][0]
         data["height"] = data["size"][1]
         del data["size"]
-
+    
     return data
 
 ref_name = []
@@ -304,7 +337,7 @@ class text():
 
 class lingrad():
     """
-    id, x1, y1, x2, y2, color1, color2, opacity1, opacity2, gradientUnits = userSpaceOnUse | objectBoundingBox
+    id, x1, y1, x2, y2, color1, color2, opacity1, opacity2, gradientUnits = userSpaceOnUse | objectBoundingBox, dir = l | r | u | d | dr | dl | ur | ul | rd | ru | lu | ld 
     http://www.w3.org/TR/SVG/pservers.html#LinearGradients
     http://www.w3schools.com/svg/svg_grad_linear.asp
     """
