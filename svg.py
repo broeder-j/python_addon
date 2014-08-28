@@ -7,7 +7,7 @@
 
 from .helper import *
 from .parameter import bash
-
+import numpy as np
 
 def unpack_lazy(data):
     """
@@ -41,6 +41,7 @@ def unpack_lazy(data):
             data["xy2"] = (1, 0)
         
         del data["dir"]
+        
     if "xy" in data:
         data["x"] = data["xy"][0]
         data["y"] = data["xy"][1]
@@ -83,6 +84,9 @@ def parse_dict(data, no_print, only_print = None):
     """
     
     def special_case(key, val):
+        if is_number(val):
+            val = "{:.3f}".format(val) #for nicer svg code
+        
         if val in ref_name and key != "id":
             val =  "url(#" + val + ")"
         
@@ -384,25 +388,37 @@ class group():
     def __init__(self, **kwargs):
         self.default()
         self.internal = ["type"]
-
+        self.defs = []
+        self.items = []
+        
         kwargs = unpack_lazy(kwargs)
         for key in kwargs:
             self[key] = kwargs[key]
     
     def default(self):
         self.data = {}
-        self.data["type"] = "group"
+        self.data["type"] = "item"
+    
+    def add(self, svg_item):
+        if svg_item["type"] == "def":
+            self.defs.append(svg_item)
+        elif svg_item["type"] == "item":
+            self.items.append(svg_item)
+    
     #------------------- const ------------------- 
     def __str__(self):
         return str(self.data)
     
-    def svg_parse(self, svg_items):
-        var = "  <g "
+    def svg_parse(self):
+        var = "  <g " + parse_dict(self.data, self.internal) + ">\n"
         
-        var += parse_dict(self.data, self.internal)
+        if len(self.defs) != 0:
+            var += "  <defs>\n"
+            for d in self.defs:
+                var += d.svg_parse()
+            var += "  </defs>\n"
         
-        var += ">\n"
-        for item in svg_items:
+        for item in self.items:
             var += item.svg_parse()
             
         var += "  </g>\n"
@@ -429,7 +445,7 @@ class canvas():
         for key in kwargs.keys():
             self[key] = kwargs[key]
         
-        self.items = [[]]
+        self.items = []
         self.group = []
         self.defs = []
     
@@ -439,14 +455,42 @@ class canvas():
         self["height"] = None
     
     def add(self, svg_item):
-        if svg_item["type"] == "group":
-            self.group.append(svg_item)
-            self.items.append([])
-        if svg_item["type"] == "def":
+        if is_list(svg_item):
+            self.add_frame(svg_item)
+        elif svg_item["type"] == "def":
             self.defs.append(svg_item)
         elif svg_item["type"] == "item":
-            self.items[-1].append(svg_item)
+            self.items.append(svg_item)
     
+    def add_frame(self, matrix):
+        """
+        Special function that takes a 2D list with (svg_item, size) elements where size = (width, height).
+        translates all svg_items in the matrix, s.t. all are centered in the minimal necessary space.
+        """
+        size = [[m[1] for m in mm] for mm in matrix]
+        svg_item = [[m[0] for m in mm] for mm in matrix]
+        max_y = [max([x[1] for x in mm]) for mm in size]
+        max_x = [max([x[0] for x in mm]) for mm in [list(i) for i in zip(*size)]]
+        
+        acc_x = [0] + list(np.add.accumulate(max_x))
+        acc_y = [0] + list(np.add.accumulate(max_y))
+        
+        size2 = [[(max_x[i], max_y[j]) for i in range(len(size[0]))] for j in range(len(size))]
+        pos = [[(acc_x[i], acc_y[j]) for i in range(len(size[0]))] for j in range(len(size))]
+        
+        for svg_row, i in zipi(svg_item):
+            for svg, j in zipi(svg_row):
+                p = pos[i][j]
+                s = size[i][j]
+                s2 = size2[i][j]
+                x = p[0] + (s2[0] - s[0]) / 2.0
+                y = p[1] + (s2[1] - s[1]) / 2.0
+                
+                svg_item[i][j]["transform"] = "translate({}, {})".format(x, y)
+                self.add(svg_item[i][j])
+        
+        self["size"] = (acc_x[-1], acc_y[-1])
+        
     #------------------- const ------------------- 
     def __str__(self):
         return str(self.data)
@@ -455,15 +499,15 @@ class canvas():
         var = "<?xml version = \"1.0\"?>\n<svg "
         var += parse_dict(self.data, self.internal) +">\n"
         
-        var += "  <defs>\n"
-        for d in self.defs:
-            var += d.svg_parse()
-        var += "  </defs>\n"
+        if len(self.defs) != 0:
+            var += "  <defs>\n"
+            for d in self.defs:
+                var += d.svg_parse()
+            var += "  </defs>\n"
         
-        for item in self.items[0]:
+        for item in self.items:
             var += item.svg_parse()
-        for group, item in zip(self.group, self.items[1:]):
-            var += group.svg_parse(item)
+        
         var += "</svg>\n"
         return "".join(var)
     
@@ -478,6 +522,7 @@ class canvas():
     #------------------- getter/setter ------------------- 
     def __setitem__(self, key, val):
         self.data[key] = val
+        unpack_lazy(self.data)
         
     def __getitem__(self, key):
         return self.data[key]
