@@ -25,6 +25,7 @@ def zipi(l):
     Shorthand for zip(list, range(len(list))), if one needs the index and the content of a list.
     """
     return zip(l, range(len(l)))
+    
 
 #------------------- converter ------------------- 
 def to_number(string):

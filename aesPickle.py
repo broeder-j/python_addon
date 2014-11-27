@@ -5,6 +5,12 @@
 # Date:    30.07.2014 14:18:52 CEST
 # File:    aesPickle.py
 
+import sys
+
+if __name__ == "__main__":
+    print("aesPickle.py")
+    
+
 try:
     import cPickle as pickle
 except ImportError:
