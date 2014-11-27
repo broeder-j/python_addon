@@ -65,10 +65,19 @@ class parameter_class(dict):
         # "p=1", "p= 1", "p =1" and "p = 1" is valid notation, here I transform all to the form "p=1"
         # "p= " and "p =" is invalid notation 
         
+        for i in range(len(argv)):
+            argv[i] = re.sub(" ", "##", argv[i])
+        
         text = " ".join(argv)
         text = re.sub(" ?= ?", "=", text)
         
         argv = text.split(" ")
+        
+        for i in range(len(argv)):
+            argv[i] = re.sub("##", " ", argv[i])
+        
+        # patch "string with spaces" or 'strings with spaces'
+        
         
         #------------------- some nice errors ------------------- 
         for w in argv:
@@ -145,7 +154,7 @@ class parameter_class(dict):
         """
         Checks if key is a parameter, flag or arg. It does not the same as the dict.has_key function, since flags and args aren't technically stored as keys.
         """
-        return self.has_arg(key) or self.has_flag(key) or self.param_set(key)
+        return self.has_arg(key) or self.has_flag(key) or self.has_param(key)
     
     def __setitem__(self, key, val):
         """
