@@ -74,7 +74,7 @@ class parameter_class(dict):
         argv = text.split(" ")
         
         for i in range(len(argv)):
-            argv[i] = re.sub("##", " ", argv[i])
+            argv[i] = re.sub("##", " ", argv[i]) #see above
         
         # patch "string with spaces" or 'strings with spaces'
         
