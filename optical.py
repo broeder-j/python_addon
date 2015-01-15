@@ -10,7 +10,8 @@ from .helper import *
 #------------------- progress ------------------- 
 def progress_bar(p):
     """
-    p is a number between 0 and 1 and progress_bar will return a string that contains a progress bar representing that progress.
+    p is a number between 0 and 1 and progress_bar will return a string 
+    that contains a progress bar representing that progress.
     """
     size = 50
     
