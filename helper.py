@@ -54,12 +54,20 @@ def read_status(path_dir):
                 data = [l.split() for l in ll]
                 for d in data:
                     m[d[0]] = to_number(d[1])
-                assert(set(m.keys()) == set(["p", "eta", "eta_2"]))
+                assert(set(m.keys()) == set(["p", "eta", "time", "launch"]))
                 return m
             except:
                 pass
     else:
         return "inexistent"
+
+#------------------- style time from int to "00:00:00" and back -------------------
+def time_int(t_str):
+    t_str = t_str.split(":")
+    return 3600 * int(t_str[0]) + 60 * int(t_str[1]) + int(t_str[2])
+    
+def time_str(t_int):
+    return "{:02d}:{:02d}:{:02d}".format(int(t_int/3600), int(t_int/60)%60, int(t_int)%60)
 
 #------------------- type checks ------------------- 
 def is_list(obj):
