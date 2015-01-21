@@ -10,11 +10,17 @@ import os
 from .color import *
 
 #------------------- helper ------------------- 
-def readable(name):
+def readable(file_):
     """
-    Checks if a file called name is readable. Uses os.
+    Checks if a file_ is readable. Uses os.
     """
-    return os.access(name, os.R_OK)
+    return os.access(file_, os.R_OK)
+
+def exists(file_):
+    """
+    Checks if a file_ exists. Uses os.
+    """
+    return os.path.isfile(file_)
 
 def abspath(file_):
     return os.path.dirname(os.path.abspath(file_))
@@ -69,6 +75,28 @@ def time_int(t_str):
 def time_str(t_int):
     return "{:02d}:{:02d}:{:02d}".format(int(t_int/3600), int(t_int/60)%60, int(t_int)%60)
 
+def dyn_time_str(t_int):
+    y, d, h, m, s = [int(t_int / (60  * 60  * 24  * 365))
+                   , int(t_int / (60  * 60  * 24))% 365
+                   , int(t_int / (60  * 60))% 24
+                   , int(t_int / (60))% 60
+                   , int(t_int) % 60]
+    if d == 0:
+        return "{:02d}:{:02d}:{:02d}".format(h, m, s)
+    else:
+        res = ""
+        if y > 0:
+            res += "{}y ".format(y)
+        res += "{}d {:02d}h".format(d, h)
+        return res
+
+#------------------- merge dict -------------------
+def merge_dict(*args):
+    l = []
+    for a in args:
+        l += list(a.items())
+    return dict(l)
+    
 #------------------- type checks ------------------- 
 def is_list(obj):
     """

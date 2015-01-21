@@ -194,8 +194,4 @@ def popen(cmd):
     If one needs the output of the bash-command, this function can provide it. Works exactly like bash(cmd) but returns the output as a string.
     """
     CYAN(cmd)
-    part = cmd.split(" ")
-    if len(part) == 1: #simple cmd like ls
-        return subprocess.check_output(part[0])
-    else: #if the input is: "foo -arg -flag", the "foo" is the cmd and "-arg -flag" the args to this cmd
-        return subprocess.check_output([part[0], " ".join(part[1:])])
+    return subprocess.check_output(cmd, shell=True) # not save!
