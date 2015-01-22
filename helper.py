@@ -7,10 +7,11 @@
 
 import os
 import re
+import collections
 
 from .debug import *
 
-#------------------- helper ------------------- 
+#------------------- file helper / os forwards ------------------- 
 def readable(file_):
     """
     Checks if a file_ is readable. Uses os.
@@ -65,6 +66,11 @@ class namespace(object):
         self.__dict__.update(dict_)
     def __getitem__(self, key):
         return self.__dict__[key]
+    def get(self, key, default = None):
+        if key in self.keys():
+            return self[key]
+        else:
+            return default
     def __setitem__(self, key, val):
         self.__dict__[key] = val
     def __delitem__(self, key, val):
@@ -189,6 +195,20 @@ def depth(l):
             return 1 + max(subdepth)
     else:
         return 0
+
+#------------------- flatten a complicated list construction -------------------
+def flatten(l):
+    if isinstance(l, collections.Iterable):
+        return [a for i in l for a in flatten(i)]
+    else:
+        return [l]
+
+#------------------- computed len(flatten(list)) but without storing the list -------------------
+def nested_len(l):
+    if isinstance(l, collections.Iterable):
+        return sum([nested_len(x) for x in l])
+    else:
+        return 1
 
 #------------------- ranges ------------------- 
 def drange(start, end, step):
