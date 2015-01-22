@@ -6,11 +6,7 @@
 # File:    aesPickle.py
 
 import sys
-
-if __name__ == "__main__":
-    print("aesPickle.py")
     
-
 try:
     import cPickle as pickle
 except ImportError:

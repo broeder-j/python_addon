@@ -168,30 +168,33 @@ class parameter_class(dict):
 parameter = parameter_class()
 
 #------------------- parameter action ------------------- 
-def bash_if(flag, action):
+def bash_if(flag, action, silent = False):
     """
     If the flag is in the parameter instance of parameter_class, the action will be executed by as a bash command if it is a string and be called otherwise (assumption action == python function with no args)
     """
     if parameter.has_flag(flag):
         if is_str(action): #normal bash cmd
-            bash(action)
+            bash(action, silent)
         elif is_function(action): #fct call
-            CYAN("called function: ")
+            if not silent:
+                CYAN("called function: ")
             action()
         else:
             ERROR("invalid action input in bash_if")
     return 0
 
-def bash(cmd):
+def bash(cmd, silent = False):
     """
     Just calls os.system and outputs the command.
     """
-    CYAN(cmd)
+    if not silent:
+        CYAN(cmd)
     os.system(cmd)
 
-def popen(cmd):
+def popen(cmd, silent = False):
     """
     If one needs the output of the bash-command, this function can provide it. Works exactly like bash(cmd) but returns the output as a string.
     """
-    CYAN(cmd)
+    if not silent:
+        CYAN(cmd)
     return subprocess.check_output(cmd, shell=True) # not save!

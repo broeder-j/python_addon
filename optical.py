@@ -26,14 +26,14 @@ def progress_bar(p):
     end = "{0:3}%".format(int(p*100))
     
     if(p < .33):
-        return RED_ + bar + NONE_ + end
+        return "{red}{}{none}{}".format(bar, end, **color)
     elif(p < .66):
-        return YELLOW_ + bar + NONE_ + end
+        return "{yellow}{}{none}{}".format(bar, end, **color)
     elif(p < 1):
-        return GREEN_ + bar + NONE_ + end
+        return "{green}{}{none}{}".format(bar, end, **color)
     elif(p == 1):
-        return CYAN_ + bar + NONE_ + end
+        return "{cyan}{}{none}{}".format(bar, end, **color)
     else:
         WARNING("progress > 100%")
-        return CYAN_ + bar + NONE_ + end
+        return "{cyan}{}{none}{}".format(bar, end, **color)
         
