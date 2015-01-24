@@ -12,7 +12,11 @@
 # Date:    21.01.2015 16:46:14 CET
 # File:    imp.py
 
-from html.parser import HTMLParser
+try:
+    from html.parser import HTMLParser
+except:
+    from HTMLParser import HTMLParser
+    
 from collections import OrderedDict
 import re
 
@@ -20,7 +24,7 @@ from ..helper import *
 
 class MyHTMLParser(HTMLParser):
     def __init__(self):
-        super(MyHTMLParser, self).__init__()
+        super(MyHTMLParser, self).__init__(self)
         self.dom = OrderedDict()
         self.curr = [self.dom]
         
