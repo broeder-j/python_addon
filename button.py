@@ -1,6 +1,6 @@
 import time
 
-from addon import *
+from addon import * 
 
 state = namespace()
 state.released = 1
@@ -9,8 +9,8 @@ state.falling = 4
 state.rising = 8
 state.changing = (state.rising | state.falling)
 state.auto_repeat = 16
-state.auto_rate = 30; #auto_repeat per second
-state.auto_delay = 500; #in millis
+state.auto_rate = 30 # auto_repeat per second
+state.auto_delay = 500 # in millis
 
 class button:
     def __init__(self, pressed_state, auto_rate = state.auto_rate, auto_delay = state.auto_delay):
@@ -33,10 +33,10 @@ class button:
             self.state_ = state.released
             return
         
-        t = time.time()*1000
+        t = time.time() * 1000
         if self.state_ & state.pressed:
             if (t - self.start_press) > (1000.0 / self.auto_rate):
-                self.start_press = time.time()*1000
+                self.start_press = time.time() * 1000
                 self.state_ = (state.auto_repeat | state.pressed)
             
         if read != self.old_read:
@@ -44,7 +44,7 @@ class button:
                 self.start = t
             else:
                 if t - self.start > 2: # deprell
-                    self.state_ = self.state_ << 2 #brings pressed -> rising and released -> falling
+                    self.state_ = self.state_ << 2 # brings pressed -> rising and released -> falling
                     self.start_press = t + self.auto_delay - (1000.0 / self.auto_rate)
                     self.old_read = read
         else:

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-#
+# 
 # Author:  Mario S. Könz <mskoenz@gmx.net>
 # Date:    06.06.2013 20:49:45 EDT
 # File:    parameter.py
@@ -10,10 +10,10 @@ import re
 import sys
 import subprocess
 
-from .color import *
-from .helper import *
+from .color import * 
+from .helper import * 
 
-#------------------- parameter class ------------------- 
+#--------------------------- parameter class -------------------------------------------------------
 class parameter_class(dict):
     """
     An useful class to parse argv. Is derived from dict.
@@ -25,7 +25,7 @@ class parameter_class(dict):
         super(dict, self).__init__()
         self.reserved_names = ["arg", "flag"]
         
-        #if a key has an "_" at the end it is treated as "hidden" in the sense that it isn't printed
+        # if a key has an "_" at the end it is treated as "hidden" in the sense that it isn't printed
         self["print_"] = False
         self["warn_"] = True
     
@@ -38,7 +38,7 @@ class parameter_class(dict):
             if not self["print_"]:
                 if key[-1] == "_":
                     continue
-            if key != sorted(self.keys())[0]: #prevent newline at the start
+            if key != sorted(self.keys())[0]: # prevent newline at the start
                  out += "\n"
             out += GREENB_ + str(key) + ":\t" + GREEN_ + str(self[key]) + NONE_
             
@@ -61,9 +61,9 @@ class parameter_class(dict):
         """
         pas = False
         
-        #------------------- regex for = notation ------------------- 
+        #----------------------- regex for = notation ----------------------------------------------
         # "p=1", "p= 1", "p =1" and "p = 1" is valid notation, here I transform all to the form "p=1"
-        # "p= " and "p =" is invalid notation 
+        # "p= " and "p =" is invalid notation
         
         for i in range(len(argv)):
             argv[i] = re.sub(" ", "##", argv[i])
@@ -74,12 +74,12 @@ class parameter_class(dict):
         argv = text.split(" ")
         
         for i in range(len(argv)):
-            argv[i] = re.sub("##", " ", argv[i]) #see above
+            argv[i] = re.sub("##", " ", argv[i]) # see above
         
         # patch "string with spaces" or 'strings with spaces'
         
         
-        #------------------- some nice errors ------------------- 
+        #------------------------ some nice errors -------------------------------------------------
         for w in argv:
             if w[0] == "-" and w.find("=") != -1:
                 ERROR("flags cannot be assigned with a equal sigh")
@@ -91,13 +91,13 @@ class parameter_class(dict):
                 ERROR("syntax not correct, check -")
                 
         
-        #------------------- normal set doesn't work bc of reserved_names check ------------------- 
+        #------------- normal set doesn't work bc of reserved_names check --------------------------
         dict.__setitem__(self, "arg", [])
         dict.__setitem__(self, "flag", [])
         
         for i in range(1, len(argv)):
             w = argv[i]
-            #checking if = sign
+            # checking if = sign
             if w.find("=") != -1:
                 key, val = w.split("=")
                 if self.has_param(key):
@@ -106,30 +106,30 @@ class parameter_class(dict):
                 continue
                 
             if w[0] == '-' and len(w) > 1:
-                if i + 1 < len(argv) and argv[i+1][0] != '-' and argv[i+1].find("=") == -1: #parameter
+                if i + 1 < len(argv) and argv[i + 1][0] != '-' and argv[i + 1].find("=") == -1: # parameter
                     
-                    #------------------- just checking for false input ------------------- 
+                    #---------------- just checking for false input --------------------------------
                     if self.has_param(w[1:]):
-                        self.warn("parameter {0} already set to {1} -> overwrite to {2}".format(w[1:], self[w[1:]], argv[i+1]))
-                    #------------------- setting the parameter ------------------- 
-                    self[w[1:]] = to_number(argv[i+1])
+                        self.warn("parameter {0} already set to {1} -> overwrite to {2}".format(w[1:], self[w[1:]], argv[i + 1]))
+                    #------------------ setting the parameter --------------------------------------
+                    self[w[1:]] = to_number(argv[i + 1])
                     pas = True
-                else: #flag
-                    #------------------- just checking for false input ------------------- 
+                else: # flag
+                    #---------------- just checking for false input --------------------------------
                     if self.has_flag(w[1:]):
                         self.warn("flag {0} was already set".format(w[1:]))
                     else:
-                        #------------------- setting the flag ------------------- 
+                        #------------------- setting the flag --------------------------------------
                         self["flag"].append(w[1:])
             else:
                 if pas:
                     pas = False
-                else: #arg
-                    #------------------- just checking for false input ------------------- 
+                else: # arg
+                    #---------------- just checking for false input --------------------------------
                     if self.has_arg(w):
                         self.warn("arg {0} was already set".format(w))
                     else:
-                        #------------------- adding the arg ------------------- 
+                        #------------------- adding the arg ----------------------------------------
                         self["arg"].append(w)
                     
     def has_arg(self, arg):
@@ -160,22 +160,22 @@ class parameter_class(dict):
         """
         Forwards to the dict.__setitem__ but makes sure that the reserved_names aren't used
         """
-        if key in self.reserved_names: #guard reserved names
+        if key in self.reserved_names: # guard reserved names
             ERROR("do not use the following names: {0}".format(self.reserved_names))
         else:
             dict.__setitem__(self, key, val)
     
 parameter = parameter_class()
 
-#------------------- parameter action ------------------- 
+#--------------------------- parameter action ------------------------------------------------------
 def bash_if(flag, action, silent = False):
     """
     If the flag is in the parameter instance of parameter_class, the action will be executed by as a bash command if it is a string and be called otherwise (assumption action == python function with no args)
     """
     if parameter.has_flag(flag):
-        if is_str(action): #normal bash cmd
+        if is_str(action): # normal bash cmd
             bash(action, silent)
-        elif is_function(action): #fct call
+        elif is_function(action): # fct call
             if not silent:
                 CYAN("called function: ")
             action()
@@ -197,4 +197,4 @@ def popen(cmd, silent = False):
     """
     if not silent:
         CYAN(cmd)
-    return subprocess.check_output(cmd, shell=True) # not save!
+    return subprocess.check_output(cmd, shell = True) # not safe!

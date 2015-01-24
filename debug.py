@@ -7,9 +7,9 @@
 
 import traceback
 
-from .color import *
+from .color import * 
 
-#------------------- debug -------------------
+#------------------------------ debug --------------------------------------------------------------
 def DEBUG_VAR(expr):
     var = str(traceback.extract_stack()[-2][3][10:-1])
     print("  {red}DEBUG_VAR: {redb}{}{red} = {}{none}".format(var, expr, **color))
@@ -17,7 +17,7 @@ def DEBUG_VAR(expr):
 def DEBUG_MSG(msg):
     print("  {red}DEBUG_MSG: {redb}{}{none}".format(msg, **color))
     
-#------------------- error / warning ------------------- 
+#--------------------------- error / warning -------------------------------------------------------
 def ERROR(text):
     """
     Raises an exception and outputs text in red color.

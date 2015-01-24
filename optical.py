@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-#
+# 
 # Author:  Mario S. Könz <mskoenz@gmx.net>
 # Date:    04.03.2014 11:44:14 CET
 # File:    optical.py
 
-from .helper import *
+from .helper import * 
 
-#------------------- progress ------------------- 
+#----------------------------- progress ------------------------------------------------------------
 def progress_bar(p):
     """
     p is a number between 0 and 1 and progress_bar will return a string 
@@ -23,7 +23,7 @@ def progress_bar(p):
     for i in range(bars, size):
         bar += " "
     bar += ">"
-    end = "{0:3}%".format(int(p*100))
+    end = "{0:3}%".format(int(p * 100))
     
     if(p < .33):
         return "{red}{}{none}{}".format(bar, end, **color)
