@@ -14,20 +14,20 @@ from .color import *
 from .helper import * 
 
 #--------------------------- parameter class -------------------------------------------------------
-class parameter_class(dict):
+class parameter_class(namespace):
     """
     An useful class to parse argv. Is derived from dict.
     """
     def __init__(self):
         """
-        Initializes the class. Do not used self.reserved_names as keys for the dict. It will raise an error.
+        Initializes the class. Do not used self.res_names_ as keys for the dict. It will raise an error.
         """
-        super(dict, self).__init__()
-        self.reserved_names = ["arg", "flag"]
+        super(namespace, self).__init__()
+        self.res_names_ = ["arg", "flag", "res_names_"]
         
         # if a key has an "_" at the end it is treated as "hidden" in the sense that it isn't printed
-        self["print_"] = False
-        self["warn_"] = True
+        self.print_ = False
+        self.warn_ = True
     
     def __str__(self):
         """
@@ -35,20 +35,18 @@ class parameter_class(dict):
         """
         out = ""
         for key in sorted(self.keys()):
-            if not self["print_"]:
+            if not self.print_:
                 if key[-1] == "_":
                     continue
-            if key != sorted(self.keys())[0]: # prevent newline at the start
-                 out += "\n"
-            out += GREENB_ + str(key) + ":\t" + GREEN_ + str(self[key]) + NONE_
+            out += "{greenb}{:<11}{green} {}{none}\n".format(key + ":", self[key], **color)
             
-        return out
+        return out[:-1] # kill last "\n"
     
     def warn(self, text):
         """
         If the key "warn_" is True, the user will be warned if a key is overwritten or a flag set a second time.
         """
-        if self["warn_"]:
+        if self.warn_:
             WARNING(text)
     
     def read(self, argv):
@@ -62,65 +60,55 @@ class parameter_class(dict):
         pas = False
         
         #----------------------- regex for = notation ----------------------------------------------
-        # "p=1", "p= 1", "p =1" and "p = 1" is valid notation, here I transform all to the form "p=1"
-        # "p= " and "p =" is invalid notation
-        
-        for i in range(len(argv)):
-            argv[i] = re.sub(" ", "##", argv[i])
-        
-        text = " ".join(argv)
-        text = re.sub(" ?= ?", "=", text)
-        
-        argv = text.split(" ")
-        
-        for i in range(len(argv)):
-            argv[i] = re.sub("##", " ", argv[i]) # see above
-        
-        # patch "string with spaces" or 'strings with spaces'
-        
+        # "p = 1" is the only valid notation, since I cannot distinguish -u "a=1" from -u a=1
+        # but -u "a = 1" can be distinguished from -u a = 1
         
         #------------------------ some nice errors -------------------------------------------------
-        for w in argv:
-            if w[0] == "-" and w.find("=") != -1:
-                ERROR("flags cannot be assigned with a equal sigh")
-            if w.find("=") != -1 and w.find("=") != w.rfind("="):
-                ERROR("too many = signs, check syntax")
-            if w[-1] == "=":
+        last = len(argv) - 1
+        for w, i_w in zipi(argv):
+            if w[0] == "-" and i_w != last and argv[i_w + 1] == "=":
+                ERROR("flags cannot be assigned with a equal sign: {} =".format(w))
+            if w == "=" and i_w == last:
                 ERROR("no assignment after equal sign")
             if w[0] == "-" and len(w) == 1:
-                ERROR("syntax not correct, check -")
+                ERROR("single '-', syntax not correct")
                 
         
-        #------------- normal set doesn't work bc of reserved_names check --------------------------
-        dict.__setitem__(self, "arg", [])
-        dict.__setitem__(self, "flag", [])
+        #------------- start parsing --------------------------
+        self.arg = []
+        self.flag = []
         
-        for i in range(1, len(argv)):
+        i = 0
+        
+        while i < last:
+            i += 1 # first argument isn't needed since it is the prog-name
             w = argv[i]
+            w1 = argv[[i+1, i][i == last]]
             # checking if = sign
-            if w.find("=") != -1:
-                key, val = w.split("=")
+            if w1 == "=":
+                key, val = w, argv[i + 2]
                 if self.has_param(key):
                     self.warn("parameter {0} already set to {1} -> overwrite to {2}".format(key, self[key], val))
                 self[key] = to_number(val)
+                i += 2
                 continue
                 
-            if w[0] == '-' and len(w) > 1:
-                if i + 1 < len(argv) and argv[i + 1][0] != '-' and argv[i + 1].find("=") == -1: # parameter
+            if w[0] == "-":
+                if w1[0] != "-": # parameter
                     
                     #---------------- just checking for false input --------------------------------
                     if self.has_param(w[1:]):
-                        self.warn("parameter {0} already set to {1} -> overwrite to {2}".format(w[1:], self[w[1:]], argv[i + 1]))
+                        self.warn("parameter {0} already set to {1} -> overwrite to {2}".format(w[1:], self[w[1:]], w1))
                     #------------------ setting the parameter --------------------------------------
-                    self[w[1:]] = to_number(argv[i + 1])
-                    pas = True
+                    self[w[1:]] = to_number(w1)
+                    i += 1
                 else: # flag
                     #---------------- just checking for false input --------------------------------
                     if self.has_flag(w[1:]):
                         self.warn("flag {0} was already set".format(w[1:]))
                     else:
                         #------------------- setting the flag --------------------------------------
-                        self["flag"].append(w[1:])
+                        self.flag.append(w[1:])
             else:
                 if pas:
                     pas = False
@@ -130,19 +118,21 @@ class parameter_class(dict):
                         self.warn("arg {0} was already set".format(w))
                     else:
                         #------------------- adding the arg ----------------------------------------
-                        self["arg"].append(w)
+                        self.arg.append(w)
                     
     def has_arg(self, arg):
         """
         Checks if arg is in the parameter_class. An arg is an entry without a value, like a filename.
         """
-        return arg in self["arg"]
+        return arg in self.arg
         
     def has_flag(self, flag):
         """
         Checks if flag is set. A flag does not have a value. It is eighter on (has_flag -> True) or off (has_flag -> False)
         """
-        return flag in self["flag"]
+        if flag[0] == "-":
+            flag = flag[1:]
+        return flag in self.flag
     
     def has_param(self, param):
         """
@@ -158,12 +148,12 @@ class parameter_class(dict):
     
     def __setitem__(self, key, val):
         """
-        Forwards to the dict.__setitem__ but makes sure that the reserved_names aren't used
+        Forwards to the namespace.__setitem__ but makes sure that the res_names_ aren't used
         """
-        if key in self.reserved_names: # guard reserved names
-            ERROR("do not use the following names: {0}".format(self.reserved_names))
+        if key in self.res_names_: # guard reserved names
+            ERROR("do not use the following names: {0}".format(self.res_names_))
         else:
-            dict.__setitem__(self, key, val)
+            namespace.__setitem__(self, key, val)
     
 parameter = parameter_class()
 

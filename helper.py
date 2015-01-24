@@ -6,10 +6,55 @@
 # File:    helper.py
 
 import os
-import re
-import collections
+import re # for split_clean
+import collections # for flatten
+from functools import partial # for split_clean
 
 from .debug import * 
+
+#---------------------------- type checks ----------------------------------------------------------
+def is_list(obj):
+    """
+    Checks if the obj is a list.
+    """
+    return isinstance(obj, list)
+    
+def is_int(obj):
+    """
+    Checks if the obj is an int.
+    """
+    return isinstance(obj, int)
+
+def is_float(obj):
+    """
+    Checks if the obj is a float.
+    """
+    return isinstance(obj, float)
+
+def is_number(obj):
+    """
+    Checks if the obj is an int or a float.
+    """
+    return is_int(obj) or is_float(obj)
+
+def is_str(obj):
+    """
+    Checks if the obj is a string.
+    """
+    return isinstance(obj, str)
+
+def is_bytes(obj):
+    """
+    Checks if the obj is a bytes array.
+    """
+    return isinstance(obj, bytes)
+
+import types
+def is_function(obj):
+    """
+    Checks if the obj is a python function.
+    """
+    return isinstance(obj, types.FunctionType)
 
 #------------------------ file helper / os forwards ------------------------------------------------
 def readable(file_):
@@ -39,6 +84,9 @@ def to_number(string):
     """
     Tries to convert the input string into an int, if that doesn't work into a float and if that also fails, returns the string again.
     """
+    if is_list(string):
+        return list(map(to_number, string))
+    
     try:
         res = int(string)
         return res
@@ -51,10 +99,21 @@ def to_number(string):
         return string
 
 #------------------------ clean split for strings --------------------------------------------------
-def split_clean(st):
-    st = re.sub("^[\\s]+|[\\s]+$", "", st) # remove front and back whitespace
-    e = '\\s+(?=(?:[^"]*"[^"]*")*[^"]*$)'
-    return re.split(e, st) # split on whitespace sections but not in quotes
+def split_clean(string, strip_quotes = False):
+    if is_list(string):
+        return list(map(partial(split_clean, strip_quotes = strip_quotes), string))
+    
+    string = re.sub("^[\\s]+|[\\s]+$", "", string) # remove front and back whitespace
+    not_in_quotes = '(?=(?:[^"\']*(?:"[^"]*"|\'[^\']*\'))*[^"\']*$)'
+    e = '\\s+'+not_in_quotes # split on whitespace sections but not in "" or ''
+    
+    res = re.split(e, string)
+    if strip_quotes:
+        for i in range(len(res)):
+            res[i] = re.sub('^(["\'])([\s\S]*)(\\1)$', "\\2", res[i]) #strips "" or '' if found at ^ and $
+        return res
+    else:
+        return res
 
 #------------------ namespace (satisfies mapping interface) :D -------------------------------------
 # Namespaces are one honking great idea -- let's do more of those!
@@ -66,15 +125,15 @@ class namespace(object):
         self.__dict__.update(dict_)
     def __getitem__(self, key):
         return self.__dict__[key]
+    def __setitem__(self, key, val):
+        self.__dict__[key] = val
+    def __delitem__(self, key, val):
+        del self.__dict__[key]
     def get(self, key, default = None):
         if key in self.keys():
             return self[key]
         else:
             return default
-    def __setitem__(self, key, val):
-        self.__dict__[key] = val
-    def __delitem__(self, key, val):
-        del self.__dict__[key]
     def keys(self):
         return self.__dict__.keys()
     def items(self):
@@ -84,7 +143,7 @@ class namespace(object):
         for k, v in sorted(self.__dict__.items()):
             sv = str(v)
             if len(sv) > 60: # shorten too long objects to size 60
-                sv = sv[:30] + "{redb} ... {green}".format(**color) + sv[-30:]
+                sv = sv[:30] + "{redb} ...{}... {green}".format(len(sv) - 60, **color) + sv[-30:]
             res += "{greenb}{:<10}{none} = {green}{}{none}\n".format(k, sv, **color)
         return res[:-1] # remove last "\n"
 
@@ -137,51 +196,6 @@ def merge_dict(*args):
         l += list(a.items())
     return dict(l)
     
-#---------------------------- type checks ----------------------------------------------------------
-def is_list(obj):
-    """
-    Checks if the obj is a list.
-    """
-    return isinstance(obj, list)
-    
-def is_int(obj):
-    """
-    Checks if the obj is an int.
-    """
-    return isinstance(obj, int)
-
-def is_float(obj):
-    """
-    Checks if the obj is a float.
-    """
-    return isinstance(obj, float)
-
-def is_number(obj):
-    """
-    Checks if the obj is an int or a float.
-    """
-    return is_int(obj) or is_float(obj)
-
-def is_str(obj):
-    """
-    Checks if the obj is a string.
-    """
-    return isinstance(obj, str)
-
-def is_bytes(obj):
-    """
-    Checks if the obj is a bytes array.
-    """
-    return isinstance(obj, bytes)
-
-import types
-def is_function(obj):
-    """
-    Checks if the obj is a python function.
-    """
-    return isinstance(obj, types.FunctionType)
-
-
 #--------------------------- depth of a list -------------------------------------------------------
 def depth(l):
     """
