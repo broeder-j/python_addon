@@ -25,15 +25,9 @@ def progress_bar(p):
     bar += ">"
     end = "{0:3}%".format(int(p * 100))
     
-    if(p < .33):
-        return "{red}{}{none}{}".format(bar, end, **color)
-    elif(p < .66):
-        return "{yellow}{}{none}{}".format(bar, end, **color)
-    elif(p < 1):
-        return "{green}{}{none}{}".format(bar, end, **color)
-    elif(p == 1):
-        return "{cyan}{}{none}{}".format(bar, end, **color)
-    else:
+    col = color[["red", "yellow", "green", "cyan"][min(int(p * 3), 3)]] # duh! ;-)
+    
+    if p > 1:
         WARNING("progress > 100%")
-        return "{cyan}{}{none}{}".format(bar, end, **color)
+    return "{}{}{none}{}".format(col, bar, end, **color)
         
