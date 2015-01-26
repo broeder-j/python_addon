@@ -19,6 +19,12 @@ def is_list(obj):
     """
     return isinstance(obj, list)
     
+def is_dict(obj):
+    """
+    Checks if the obj is a dict.
+    """
+    return isinstance(obj, dict)
+    
 def is_int(obj):
     """
     Checks if the obj is an int.
@@ -87,6 +93,9 @@ def to_number(string):
     if is_list(string):
         return list(map(to_number, string))
     
+    elif is_dict(string):
+        return dict([(k, to_number(v)) for k, v in string.items()])
+        
     try:
         res = int(string)
         return res
@@ -103,7 +112,7 @@ def split_clean(string, strip_quotes = False):
     if is_list(string):
         return list(map(partial(split_clean, strip_quotes = strip_quotes), string))
     
-    string = re.sub("^[\\s]+|[\\s]+$", "", string) # remove front and back whitespace
+    string = re.sub("^[\\s]+|[\\s]+$", "", string) # remove front and back whitespace (strip would also work)
     not_in_quotes = '(?=(?:[^"\']*(?:"[^"]*"|\'[^\']*\'))*[^"\']*$)'
     e = '\\s+'+not_in_quotes # split on whitespace sections but not in "" or ''
     
@@ -229,7 +238,7 @@ def drange(start, end, step):
     """
     Returns a range of floating point numbers.
     """
-    return [step * i for i in range(int(start / step), int(end / step))]
+    return [start + step * i for i in range(int(end / step))]
 
 #---------------------------- string helper --------------------------------------------------------
 def padding(s, modulo, char = " "):
