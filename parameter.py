@@ -187,4 +187,4 @@ def popen(cmd, silent = False):
     """
     if not silent:
         CYAN(cmd)
-    return subprocess.check_output(cmd, shell = True) # not safe!
+    return subprocess.check_output(cmd, shell = True).decode("utf-8") # not safe!

@@ -78,6 +78,9 @@ def exists(file_):
 def abspath(file_):
     return os.path.dirname(os.path.abspath(file_))
 
+def cwd():
+    return os.getcwd()
+
 #--------------------------- zip with index --------------------------------------------------------
 def zipi(l):
     """
