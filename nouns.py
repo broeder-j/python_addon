@@ -1527,3 +1527,6 @@ noun_list = ['people'
            , 'wake'
            , 'wrap'
            , 'yesterday']
+
+def get_word(nr):
+    return noun_list[nr%len(noun_list)]
