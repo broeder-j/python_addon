@@ -89,7 +89,7 @@ def zipi(l):
     return zip(l, range(len(l)))
 
 #----------------------------- converter -----------------------------------------------------------
-def to_number(string):
+def to_number(string, strip_quotes = True):
     """
     Tries to convert the input string into an int, if that doesn't work into a float and if that also fails, returns the string again.
     """
@@ -108,7 +108,22 @@ def to_number(string):
         res = float(string)
         return res
     except:
-        return string
+        pass
+    
+    if string[0] == "[" and string[-1] == "]":
+        l = string[1:-1].split(",")
+        return to_number(l, strip_quotes)
+    
+    if strip_quotes == True:
+        return re.sub('^[\s]*(["\'])([\s\S]*)(\\1)$', "\\2", string)
+    return string
+
+#------------------- make list if not already a list -------------------
+def make_list(obj):
+    if is_list(obj):
+        return obj
+    else:
+        return [obj]
 
 #------------------------ clean split for strings --------------------------------------------------
 def split_clean(string, strip_quotes = False):
@@ -129,7 +144,7 @@ def split_clean(string, strip_quotes = False):
 
 #------------------ namespace (satisfies mapping interface) :D -------------------------------------
 # Namespaces are one honking great idea -- let's do more of those!
-class namespace(object):
+class namespace:
     def __init__(self, dict_ = None):
         if dict_ != None:
             self.update(dict_)
@@ -139,7 +154,7 @@ class namespace(object):
         return self.__dict__[key]
     def __setitem__(self, key, val):
         self.__dict__[key] = val
-    def __delitem__(self, key, val):
+    def __delitem__(self, key):
         del self.__dict__[key]
     def get(self, key, default = None):
         if key in self.keys():
@@ -201,12 +216,15 @@ def dyn_time_str(t_int):
         res += "{}d {:02d}h".format(d, h)
         return res
 
-#----------------------------- merge dict ----------------------------------------------------------
+#----------------------------- dict support ----------------------------------------------------------
 def merge_dict(*args):
     l = []
     for a in args:
         l += list(a.items())
     return dict(l)
+
+def dict_select(dict_, keys):
+    return dict([(k, v) for k, v in dict_.items() if k in keys])
     
 #--------------------------- depth of a list -------------------------------------------------------
 def depth(l):
