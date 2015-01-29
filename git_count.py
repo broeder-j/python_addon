@@ -26,4 +26,4 @@ def git_count(path):
     chksum = 0
     for num in hashes:
         chksum += int(num, base=16)
-    return len(hashes), chksum % (1<<64)
+    return len(hashes), chksum
