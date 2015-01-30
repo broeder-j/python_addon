@@ -37,7 +37,7 @@ class signal_class():
             self.slotl.remove(slot)
     
     def emit(self, *argv, **kwargs):
-        print("Signal {} activated {}: ".format(self.signame, len(self.slotl)), *argv)
+        #~ print("Signal {} activated {}: ".format(self.signame, len(self.slotl)), *argv)
         for slot in self.slotl:
             slot(*argv, **kwargs)
     
