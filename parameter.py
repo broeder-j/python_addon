@@ -22,7 +22,7 @@ class parameter_class(namespace):
         """
         Initializes the class. Do not used self.res_names_ as keys for the dict. It will raise an error.
         """
-        super(namespace, self).__init__()
+        super(parameter_class, self).__init__()
         self.res_names_ = ["arg", "flag", "res_names_"]
         
         # if a key has an "_" at the end it is treated as "hidden" in the sense that it isn't printed
