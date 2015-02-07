@@ -24,9 +24,9 @@ if NO_COLOR:
     for i in range(len(ALL_COLORS)):
         exec(ALL_COLORS[i] + '_ = ""')
         if sys.version_info >= (3, 0):
-            exec("def " + ALL_COLORS[i] + "(out, end = \"\\n\"):\n\tprint(str(out), end=end)")
+            exec("def " + ALL_COLORS[i] + '(*out, end = "\\n"):\n\tprint(" ".join([str(x) for x in out]), end=end)')
         else:
-            exec("def " + ALL_COLORS[i] + "(out, end = \"\\n\"):\n\tprint(str(out) + end),")
+            exec("def " + ALL_COLORS[i] + '(*out, end = "\\n"):\n\tprint(" ".join([str(x) for x in out]) + end),')
         color[ALL_COLORS[i].lower()] = ""
         color["clrscr"] = ""
         color["clear"] = ""
@@ -36,9 +36,9 @@ else:
     for i in range(len(ALL_COLORS)):
         exec(ALL_COLORS[i] + '_ = "' + ALL_COLORS_IMPL[i] + '"')
         if sys.version_info >= (3, 0):
-            exec("def " + ALL_COLORS[i] + "(out, end = \"\\n\"):\n\tprint(" + ALL_COLORS[i] +  "_ + str(out) + NONE_, end=end)")
+            exec("def " + ALL_COLORS[i] + '(*out, end = "\\n"):\n\tprint(' + ALL_COLORS[i] +  '_ + " ".join([str(x) for x in out]) + NONE_, end=end)')
         else:
-            exec("def " + ALL_COLORS[i] + "(out, end = \"\\n\"):\n\tprint(" + ALL_COLORS[i] +  "_ + str(out) + NONE_ + end),")
+            exec("def " + ALL_COLORS[i] + '(*out, end = "\\n"):\n\tprint(' + ALL_COLORS[i] +  '_ + " ".join([str(x) for x in out]) + NONE_ + end),')
         color[ALL_COLORS[i].lower()] = ALL_COLORS_IMPL[i]
         color["clrscr"] = CLRSCR_
         color["clear"] = CLEAR_
