@@ -155,6 +155,10 @@ class parameter_class(namespace):
         else:
             namespace.__setitem__(self, key, val)
     
+    @property
+    def param(self):
+        return [k for k in namespace.keys(self) if k not in self.res_names_]
+    
 parameter = parameter_class()
 
 #--------------------------- parameter action ------------------------------------------------------

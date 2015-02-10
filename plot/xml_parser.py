@@ -7,21 +7,11 @@
 
 from ..helper import *
 
+from .txt_to_xml import *
+from .xml_helper import *
+
 import xml.etree.ElementTree as xml
 import numpy as np
-
-def prettify(node, indent = "    ", level = 0):
-    node.tail = "\n" + indent * level
-    if len(node) != 0:
-        node.text = "\n" + indent * (level + 1)
-        for c in node:
-            prettify(c, indent, level + 1)
-            if c == node[-1]:
-                c.tail = "\n" + indent * level
-    else:
-        if node.text:
-            node.text = node.text.strip()
-        node.tail = "\n" + indent * level
 
 def plot_option_to_xml(nsx, popt, mod = "update"):
     p = nsx.root.find("plot_option")
