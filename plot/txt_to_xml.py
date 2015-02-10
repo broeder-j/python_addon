@@ -15,7 +15,6 @@ def txt_to_xml(src, dest, comment = ["-"]):
     dest = dest + os.path.basename(src[:-3]) + "xml"
     
     ifs = open(src, "r")
-    ofs = open(dest, "w")
     
     #------------------- data -------------------
     label = []
@@ -46,24 +45,38 @@ def txt_to_xml(src, dest, comment = ["-"]):
         del data[d]
         del label[d]
     data = list(np.array(data).transpose())
-    #------------------- generate xml -------------------
-    root = xml.Element("plot")
-    Eparam = xml.Element("parameter", param)
-    Elabel = xml.Element("label")
-    Elabel.text = " ".join(label)
-    Edata = xml.Element("data")
     
+    #------------------- generate/read xml -------------------
+    if readable(dest):
+        tree   = xml.parse(dest)
+        root   = tree.getroot()
+        Eparam = root.find("parameter")
+        Eparam.clear()
+        Elabel = root.find("label")
+        Elabel.clear()
+        Edata  = root.find("data")
+        Edata.clear()
+    else:
+        root   = xml.Element("plot")
+        Eparam = xml.Element("parameter")
+        Elabel = xml.Element("label")
+        Edata  = xml.Element("data")
+        tree   = xml.ElementTree(root)
+        root.append(Eparam)
+        root.append(Elabel)
+        root.append(Edata)
+    
+    
+    Eparam.attrib = param
+    Elabel.text = " ".join(label)
     for line in data:
         d = xml.Element("d")
         d.text = " ".join([str(i) for i in line])
         Edata.append(d)
     
-    root.append(Eparam)
-    root.append(Elabel)
-    root.append(Edata)
+    
     prettify(root)
     
-    tree = xml.ElementTree(root)
     tree.write(dest, encoding="utf-8", xml_declaration = True)
     
     print("{green}converted {greenb}{}{green} to {greenb}{}{none}".format(src, dest, **color))
