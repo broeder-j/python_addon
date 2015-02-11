@@ -23,7 +23,8 @@ def txt_to_xml(src, dest, comment = ["-"]):
     #------------------- read txt file -------------------
     lines = [to_number(split_clean(l)) for l in ifs.readlines() if l[0] not in comment]
     label = lines[0]
-    data = np.array(lines[1:]).transpose()
+    
+    data = transpose(lines[1:])
     
     #------------------- transform indentical data to parameter -------------------
     del_idx = []
@@ -40,12 +41,11 @@ def txt_to_xml(src, dest, comment = ["-"]):
             del_idx.insert(0, k)
             param[label[k]] = str(compare)
     
-    data = list(data)
     for d in del_idx:
         del data[d]
         del label[d]
-    data = list(np.array(data).transpose())
     
+    data = transpose(data)
     #------------------- generate/read xml -------------------
     if readable(dest):
         tree   = xml.parse(dest)

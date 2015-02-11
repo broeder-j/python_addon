@@ -13,19 +13,27 @@ from .xml_helper import *
 import xml.etree.ElementTree as xml
 import numpy as np
 
-def plot_option_to_xml(nsx, popt, mod = "update"):
-    p = nsx.root.find("plot_option")
+def plot_option_to_xml(nsx, popt, sel = 0, mod = "update"):
+    opts = nsx.root.find("plot_option")
     
     popt = dict([(k, str(v)) for k, v in popt.items()])
     
-    if p == None: #------------------- create new element if tag not found -------------------
-        p = xml.Element("plot_option", popt)
-        nsx.root.insert(0, p)
+    if opts == None: #------------------- create new element if tag not found -------------------
+        opts = xml.Element("plot_option")
+        opts.append(xml.Element("opt", popt))
+        nsx.root.insert(0, opts)
     else: #------------------- update or overwrite current tag -------------------
+        opt = opts.findall("opt")
+        if len(opt) <= sel:
+            for i in range(sel - len(opt) + 1):
+                opts.append(xml.Element("opt"))
+        
+        opt = opts.findall("opt")
+        
         if mod == "update":
-            p.attrib.update(popt)
+            opt[sel].attrib.update(popt)
         elif mod == "overwrite":
-            p.attrib = popt
+            opt[sel].attrib = popt
     
     #------------------- make xml nicer (it changes and strips text) -------------------
     prettify(nsx.root)
@@ -44,12 +52,13 @@ def xml_to_plot(file_):
     nsx.label = split_clean(nsx.root.find("label").text)
     nsx.data = np.array(to_number(split_clean([c.text for c in nsx.root.find("data").findall("d")]))).transpose()
     
-    p = nsx.root.find("plot_option")
-    if p == None:
-        nsx.plot_option = {}
+    opts = nsx.root.find("plot_option")
+    if opts == None:
+        nsx.plot_option = [{}]
     else:
-        nsx.plot_option = to_number(p.attrib)
+        opt = opts.findall("opt")
+        nsx.plot_option = [to_number(p.attrib) for p in opt]
     
-    nsx.plot_option_to_xml = lambda popt, mod = "update": plot_option_to_xml(nsx, popt, mod)
+    nsx.plot_option_to_xml = lambda popt, sel = 0, mod = "update": plot_option_to_xml(nsx, popt, sel, mod)
     
     return nsx
