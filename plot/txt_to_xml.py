@@ -6,19 +6,23 @@
 # File:    txt_parser.py
 
 from ..helper import *
+from ..parameter import *
 from .xml_helper import *
 
 import xml.etree.ElementTree as xml
 import numpy as np
 
 def txt_to_xml(src, dest, comment = ["-"]):
-    dest = dest + os.path.basename(src[:-3]) + "xml"
+    if not readable(dest):
+        bash("mkdir {}".format(dest))
+    
+    dest = dest + "/" + os.path.basename(src[:-3]) + "xml"
     
     ifs = open(src, "r")
     
     #------------------- data -------------------
     label = []
-    data = []
+    data =  []
     param = {}
     #------------------- read txt file -------------------
     lines = [to_number(split_clean(l)) for l in ifs.readlines() if l[0] not in comment]
@@ -50,6 +54,8 @@ def txt_to_xml(src, dest, comment = ["-"]):
     if readable(dest):
         tree   = xml.parse(dest)
         root   = tree.getroot()
+        Eopt   = root.find("plot_option")
+        Eopt.attrib["source"] = src
         Eparam = root.find("parameter")
         Eparam.clear()
         Elabel = root.find("label")
@@ -58,10 +64,12 @@ def txt_to_xml(src, dest, comment = ["-"]):
         Edata.clear()
     else:
         root   = xml.Element("plot")
+        Eopt   = xml.Element("plot_option", {"source": src})
         Eparam = xml.Element("parameter")
         Elabel = xml.Element("label")
         Edata  = xml.Element("data")
         tree   = xml.ElementTree(root)
+        root.append(Eopt)
         root.append(Eparam)
         root.append(Elabel)
         root.append(Edata)

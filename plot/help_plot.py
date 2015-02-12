@@ -11,6 +11,7 @@ def print_help(valid_plot_option, special_option, mod = "all"):
     sd = {}
     # special
     sd["l"] =      "flag:  show all labels"
+    sd["update"] = "flag:  reloads the txt file specified in 'source' into this xml"
     sd["conv"] =   "param: convert all .txt files in 'arg' to .xml files with same name but in folder 'conv'"
     sd["cp_opt"] = "param: [isel, osel], copy the plot_option::opt node 'isel' from the 'arg[0]' xml-file to each xml-file in 'arg[1:]' to position 'osel'"
     sd["isel"]   = "param: from plot_options use the opt node number 'isel'. Default is 0 if one file in 'arg', 1 otherwise"

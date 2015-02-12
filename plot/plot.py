@@ -18,6 +18,11 @@ import copy
 lower_min = np.array([ np.inf,  np.inf])
 upper_max = np.array([-np.inf, -np.inf])
 
+def reset_lim():
+    global lower_min, upper_max
+    lower_min = np.array([ np.inf,  np.inf])
+    upper_max = np.array([-np.inf, -np.inf])
+
 def update_lim(xdata, ydata):
     if lower_min[0] == np.inf:
         lower_min[0] = min(lower_min[0], min(xdata))
@@ -75,56 +80,12 @@ def get_select(xdata, ydata, additional, y_i, opt):
     
     return xdata, ydata
 
-def plot(args = parameter):
-    #------------------- get file names -------------------
-    p = args
-    files = p["arg"]
-    
-    #=================== helper fct ===================
-    #------------------- convert txt to xml, conv specifies dest location -------------------
-    if "conv" in p.param:
-        for file_ in files:
-            txt_to_xml(file_, p.conv)
-        return
-    
-    #------------------- read all file in namespace plot -------------------
-    nsp = []
-    for file_ in files:
-        nsp.append(xml_to_plot(file_))
-    
-    #------------------- copy plot_options from file specified in cp_opt -------------------
-    if "cp_opt" in p.param:
-        ncp = nsp[0]
-        opt = ncp.plot_option
-        isel, osel =  p.cp_opt
-        for nsx in nsp[1:]:
-            nsx.plot_option_to_xml(opt[isel], sel = osel, mod="overwrite")
-            GREEN("{green}copied plot_option from {greenb}{} {green}sel:{greenb}{} {green}to {greenb}{} {green}sel:{greenb}{}{green}".format(ncp.file_, isel, nsx.file_, osel, **color))
-        return
-    
-    #------------------- join data from different files -------------------    
-    for ns, ns_i in zipi(nsp):
-        if ns_i == 0:
-            nsx = ns
-            param_compare = nsx.param
-            if len(nsp) > 1:
-                #set opt isel to 1 (if not set) in order not to overwrite config for single file plotting
-                p.isel = p.get("isel", 1)
-                nsx.label = ["{:0>2}_{}".format(ns_i, l) for l in nsx.label]
-                nsx.data = list(nsx.data)
-        else:
-            if param_compare != ns.param:
-                ERROR("parameter not the same in {} and {}".format(nsx.file_, ns.file_))
-            else:
-                nsx.data += list(ns.data)
-                nsx.label += ["{:0>2}_{}".format(ns_i, l) for l in ns.label]
-    
+def plot_helper(nsx, p):
     #------------------- show available labels -------------------
     if p.has_flag("l"):
         for l, l_i in zipi(nsx.label):
             print("{green}pos {greenb}{:0>2}{green} = {green}{}{none}".format(l_i, l, **color))
         return
-    
     #=================== plot ===================
     #------------------- prepare plot opt dict -------------------
     valid_plot_option = [
@@ -156,7 +117,7 @@ def plot(args = parameter):
                        , "markersize"
                        , "legend_loc"
                        ]
-    special_option = ["isel", "osel", "conv", "l", "cp_opt", "conf"]
+    special_option = ["update", "isel", "osel", "conv", "l", "cp_opt", "conf"]
     
     
     #------------------- defaults options -------------------
@@ -172,7 +133,7 @@ def plot(args = parameter):
     isel = p.get("isel", 0)
     osel = p.get("osel", isel)
     
-    if len(nsp) != 0:
+    if len(nsx.plot_option) > isel:
         opt.update(dict_select(nsx.plot_option[isel], valid_plot_option)) #overwrite by xml info
     opt.update(dict_select(p, valid_plot_option))               #overwrite by argv info
     
@@ -185,6 +146,7 @@ def plot(args = parameter):
     
     #=================== help and config print ===================
     if p.has_key("conf"):
+        print(nsx.source)
         print_conf(p, opt, legend_dict)
         return
     if p.has_key("help"):
@@ -236,6 +198,10 @@ def plot(args = parameter):
     if "linreg" in opt.keys():
         if not is_list(opt.linreg[0]):
             opt.linreg = [opt.linreg for i in range(len(opt.y))]
+    
+    #------------------- lazy notation -------------------
+    if opt.o[-4] != ".":
+        opt.o += "/" + filename(nsx.file_)[:-4] + ".pdf"
     
     #=================== main plot ===================
     fig, ax = pyplot.subplots()
@@ -298,8 +264,9 @@ def plot(args = parameter):
         ax.set_ylabel(get_label(opt.y[0], "ylabel", 0))
     else:
         ax.legend(loc = opt.legend_loc)
-        if len(opt.ylabel) > len(opt.y):
-            ax.set_ylabel(opt.ylabel[-1])
+        if "ylabel" in opt.keys():
+            if len(opt.ylabel) > len(opt.y):
+                ax.set_ylabel(opt.ylabel[-1])
     
     #------------------- set parameter box -------------------
     if "parameter" in opt.keys():
@@ -329,3 +296,58 @@ def plot(args = parameter):
     fig.savefig(opt.o)
     
     nsx.plot_option_to_xml(opt_save, sel = osel, mod="overwrite")
+    reset_lim()
+
+def plot(args = parameter):
+    #------------------- get file names -------------------
+    p = args
+    files = p["arg"]
+    
+    #=================== helper fct ===================
+    #------------------- convert txt to xml, conv specifies dest location / update xml -------------------
+    if "conv" in p.param:
+        for file_ in files:
+            txt_to_xml(file_, p.conv)
+        return
+    
+    if "update" in p.flag:
+        for file_ in files:
+            dir_ = path(file_)
+            nsx = xml_to_plot(file_)
+            txt_to_xml(nsx.source, dir_)
+    
+    #------------------- read all file in namespace plot -------------------
+    nsp = []
+    for file_ in files:
+        nsp.append(xml_to_plot(file_))
+    
+    #------------------- copy plot_options from file specified in cp_opt -------------------
+    if "cp_opt" in p.param:
+        ncp = nsp[0]
+        opt = ncp.plot_option
+        isel, osel =  p.cp_opt
+        for nsx in nsp[1:]:
+            nsx.plot_option_to_xml(opt[isel], sel = osel, mod="overwrite")
+            GREEN("{green}copied plot_option from {greenb}{} {green}sel:{greenb}{} {green}to {greenb}{} {green}sel:{greenb}{}{green}".format(ncp.file_, isel, nsx.file_, osel, **color))
+        return
+    
+    if "parallel" in p.flag:
+        for ns in nsp:
+            plot_helper(ns, p)
+    else:
+        #------------------- join data from different files -------------------    
+        for ns, ns_i in zipi(nsp):
+            if ns_i == 0:
+                nsx = ns
+                param_compare = nsx.param
+                if len(nsp) > 1:
+                    p.isel = p.get("isel", 1)
+                    nsx.label = ["{:0>2}_{}".format(ns_i, l) for l in nsx.label]
+                    nsx.data = list(nsx.data)
+            else:
+                if param_compare != ns.param:
+                    ERROR("parameter not the same in {} and {}".format(nsx.file_, ns.file_))
+                else:
+                    nsx.data += list(ns.data)
+                    nsx.label += ["{:0>2}_{}".format(ns_i, l) for l in ns.label]
+        plot_helper(nsx, p)
