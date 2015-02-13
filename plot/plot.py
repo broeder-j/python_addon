@@ -24,9 +24,8 @@ def reset_lim():
     upper_max = np.array([-np.inf, -np.inf])
 
 def update_lim(xdata, ydata):
-    if lower_min[0] == np.inf:
-        lower_min[0] = min(lower_min[0], min(xdata))
-        upper_max[0] = max(upper_max[0], max(xdata))
+    lower_min[0] = min(lower_min[0], min(xdata))
+    upper_max[0] = max(upper_max[0], max(xdata))
     lower_min[1] = min(lower_min[1], min(ydata))
     upper_max[1] = max(upper_max[1], max(ydata))
 
@@ -62,13 +61,13 @@ def apply_manipulator(data, idx, opt, error = False):
         
     return data
 
-def get_select(xdata, ydata, additional, y_i, opt):
-    if "select" in opt.keys():
-        if len(opt.select[y_i]) == 2:
-            b, sp = opt.select[y_i]
+def get_select(xdata, ydata, additional, y_i, opt, kw):
+    if kw in opt.keys():
+        if len(opt[kw][y_i]) == 2:
+            b, sp = opt[kw][y_i]
             e = len(xdata)
         else:
-            b, e, sp = opt.select[y_i]
+            b, e, sp = opt[kw][y_i]
         
         xdata = xdata[b:e][0::sp]
         ydata = ydata[b:e][0::sp]
@@ -99,7 +98,8 @@ def plot_helper(nsx, p):
                        , "parameter_loc"
                        # manipulation
                        , "acc"
-                       , "select"
+                       , "dselect"
+                       , "pselect"
                        , "linreg"
                        # destination
                        , "o"
@@ -183,21 +183,17 @@ def plot_helper(nsx, p):
             opt.yerr[i] = label_to_number(opt.yerr[i])
     
     #------------------- handle shorthand notation -------------------
-    if "acc" in opt.keys():
-        if not is_list(opt.acc):
-            opt.acc = [opt.acc for i in range(len(opt.y))]
+    expand = [["dselect", lambda x: is_list(x[0])]
+            , ["pselect", lambda x: is_list(x[0])]
+            , ["linreg", lambda x: is_list(x[0])]
+            , ["acc", lambda x: is_list(x)]
+            , ["markersize", lambda x: is_list(x)]
+            ]
     
-    if "select" in opt.keys():
-        if not is_list(opt.select[0]):
-            opt.select = [opt.select for i in range(len(opt.y))]
-    
-    if "markersize" in opt.keys():
-        if not is_list(opt.markersize):
-            opt.markersize = [opt.markersize for i in range(len(opt.y))]
-    
-    if "linreg" in opt.keys():
-        if not is_list(opt.linreg[0]):
-            opt.linreg = [opt.linreg for i in range(len(opt.y))]
+    for key, test in expand:
+        if key in opt.keys():
+            if not test(opt[key]):
+                opt[key] = [opt[key] for i in range(len(opt.y))]
     
     #------------------- lazy notation -------------------
     if opt.o[-4] != ".":
@@ -212,15 +208,20 @@ def plot_helper(nsx, p):
     
     
     for y, y_i in zipi(opt.y):
-        #------------------- set x data -------------------
+        #------------------- set data -------------------
         xdata = nsx.data[opt.x[y_i]]
+        ydata = nsx.data[y]
         if "xerr" in opt.keys():
             additional["xerr"] = nsx.data[opt.xerr[y_i]]
-        
-        #------------------- set y data -------------------
-        ydata = apply_manipulator(nsx.data[y], y_i, opt)
         if "yerr" in opt.keys() and opt.yerr[y_i] != -1:
-            additional["yerr"] = apply_manipulator(nsx.data[opt.yerr[y_i]], y_i, opt, error = True)
+            additional["yerr"] = nsx.data[opt.yerr[y_i]]
+        
+        #------------------- apply manipulatros to data -------------------
+        xdata, ydata = get_select(xdata, ydata, additional, y_i, opt, "dselect")
+        
+        ydata = apply_manipulator(ydata, y_i, opt)
+        if "yerr" in opt.keys() and opt.yerr[y_i] != -1:
+            additional["yerr"] = apply_manipulator(additional["yerr"], y_i, opt, error = True)
         
         #------------------- style -------------------
         if "markersize" in opt.keys():
@@ -230,8 +231,7 @@ def plot_helper(nsx, p):
         opt.style.rotate(-1)
         
         #------------------- get plot selection -------------------
-        xdata, ydata = get_select(xdata, ydata, additional, y_i, opt)
-        
+        xdata, ydata = get_select(xdata, ydata, additional, y_i, opt, "pselect")
         plot_fct(xdata, ydata, label = get_label(y, "ylabel", y_i), **additional)
         update_lim(xdata, ydata)
         #------------------- linreg -------------------
@@ -288,14 +288,18 @@ def plot_helper(nsx, p):
             , bbox=dict(boxstyle='square', facecolor=background_color, edgecolor=grid_color, alpha=1)
         )
     
-    print("{green}ploted {greenb}{} {green}to {greenb}{}{green} with selection {greenb}{}{green} (-> {}){none}".format(nsx.file_, opt.o, isel, osel, **color))
     
     fig.set_size_inches(*opt.size_inch)
     #~ fig.subplots_adjust(left=0.05, right=.95, top=0.9, bottom=0.1)
     fig.tight_layout()
+    
+    if not readable(path(opt.o)):
+        bash("mkdir {}".format(path(opt.o)))
+    
     fig.savefig(opt.o)
     
     nsx.plot_option_to_xml(opt_save, sel = osel, mod="overwrite")
+    print("{green}ploted {greenb}{} {green}to {greenb}{}{green} with selection {greenb}{}{green} (-> {}){none}".format(nsx.file_, opt.o, isel, osel, **color))
     reset_lim()
 
 def plot(args = parameter):
