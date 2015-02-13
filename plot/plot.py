@@ -133,7 +133,7 @@ def plot_helper(nsx, p):
     isel = p.get("isel", 0)
     osel = p.get("osel", isel)
     
-    if len(nsx.plot_option) > isel:
+    if nsx != None and len(nsx.plot_option) > isel:
         opt.update(dict_select(nsx.plot_option[isel], valid_plot_option)) #overwrite by xml info
     opt.update(dict_select(p, valid_plot_option))               #overwrite by argv info
     
@@ -146,7 +146,6 @@ def plot_helper(nsx, p):
     
     #=================== help and config print ===================
     if p.has_key("conf"):
-        print(nsx.source)
         print_conf(p, opt, legend_dict)
         return
     if p.has_key("help"):
@@ -293,8 +292,7 @@ def plot_helper(nsx, p):
     #~ fig.subplots_adjust(left=0.05, right=.95, top=0.9, bottom=0.1)
     fig.tight_layout()
     
-    if not readable(path(opt.o)):
-        bash("mkdir {}".format(path(opt.o)))
+    create_folder(path(opt.o))
     
     fig.savefig(opt.o)
     
@@ -340,6 +338,7 @@ def plot(args = parameter):
             plot_helper(ns, p)
     else:
         #------------------- join data from different files -------------------    
+        nsx = None
         for ns, ns_i in zipi(nsp):
             if ns_i == 0:
                 nsx = ns

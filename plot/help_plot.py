@@ -28,7 +28,8 @@ def print_help(valid_plot_option, special_option, mod = "all"):
     sd["parameter_loc"] ="param: [x,y] between 0 and one, defines where the parameter table is"
     # manipulation
     sd["acc"] =    "param: can be in [0, 1] or a list of those. Specifies if the data and error of 'y' should be accumulated"
-    sd["select"] = "param: eighter [start, spacing], [start, end, spacing] or a list of those. Only data with index in 'select' are plotted"
+    sd["dselect"] = "param: eighter [start, spacing], [start, end, spacing] or a list of those. Only data with index in 'select' are used further for manipulators"
+    sd["pselect"] = "param: eighter [start, spacing], [start, end, spacing] or a list of those. Only data with index in 'select' are plotted. Happens after the manipulators"
     sd["linreg"] = "param: [start, end] or a list of those. Performs a linear regression and plots in in range 'linreg'. Doesn't have a 'ylabel'"
     # destination
     sd["o"] =      "param: the plot will be saved in this location"

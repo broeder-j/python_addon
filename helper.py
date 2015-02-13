@@ -84,6 +84,11 @@ def filename(file_):
 def path(file_):
     return os.path.dirname(file_)
 
+def create_folder(name):
+    if not readable(name):
+        if name not in ["", "."]:
+            os.system("mkdir {}".format(name))
+
 def cwd():
     return os.getcwd()
 

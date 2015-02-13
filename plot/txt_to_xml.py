@@ -13,11 +13,9 @@ import xml.etree.ElementTree as xml
 import numpy as np
 
 def txt_to_xml(src, dest, comment = ["-"]):
-    if not readable(dest):
-        bash("mkdir {}".format(dest))
+    create_folder(dest)
     
     dest = dest + "/" + os.path.basename(src[:-3]) + "xml"
-    
     ifs = open(src, "r")
     
     #------------------- data -------------------
@@ -87,4 +85,4 @@ def txt_to_xml(src, dest, comment = ["-"]):
     
     tree.write(dest, encoding="utf-8", xml_declaration = True)
     
-    print("{green}converted {greenb}{}{green} to {greenb}{}{none}".format(src, dest, **color))
+    print("{yellow}converted {yellowb}{}{yellow} to {yellowb}{}{none}".format(src, dest, **color))
