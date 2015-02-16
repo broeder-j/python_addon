@@ -12,8 +12,8 @@ from .help_plot import *
 from .xml_parser import *
 from .import_pyplot import *
 
-import collections
 import copy
+import collections
 
 lower_min = np.array([ np.inf,  np.inf])
 upper_max = np.array([-np.inf, -np.inf])
@@ -222,6 +222,9 @@ def plot_helper(nsx, p):
         if "yerr" in opt.keys() and opt.yerr[y_i] != -1:
             additional["yerr"] = apply_manipulator(additional["yerr"], y_i, opt, error = True)
         
+        p = len(ydata)//2
+        print(xdata[p], ydata[p], additional["yerr"][p])
+        
         #------------------- style -------------------
         if "markersize" in opt.keys():
             additional["markersize"] = opt.markersize[y_i]
@@ -248,7 +251,7 @@ def plot_helper(nsx, p):
     
     #------------------- set title -------------------
     if "title" in opt.keys():
-        ax.set_title(opt.title)
+        ax.set_title(opt.title.format(**nsx.param))
     
     #------------------- set labels / legend -------------------
     if "xticks" in opt.keys():
@@ -304,7 +307,6 @@ def plot(args = parameter):
     #------------------- get file names -------------------
     p = args
     files = p["arg"]
-    
     #=================== helper fct ===================
     #------------------- convert txt to xml, conv specifies dest location / update xml -------------------
     if "conv" in p.param:
@@ -334,8 +336,59 @@ def plot(args = parameter):
         return
     
     if "parallel" in p.flag:
-        for ns in nsp:
-            plot_helper(ns, p)
+        if "split" in p.param and "a3data" in p.param:
+            #------------------- prepare join namespace -------------------
+            join = namespace()
+            join.label = nsp[0].label + [p.a3data[0]]
+            join.data = [[] for i in range(len(nsp[0].data) + 1)]
+            
+            #------------------- join all data -------------------
+            for ns, ns_i in zipi(nsp):
+                for d, d_i in zipi(ns.data):
+                    join.data[d_i] += list(d)
+                join.data[-1] += [p.a3data[ns_i+1] for i in range(len(d))]
+            
+            join.data = transpose(join.data)
+            join.data = sorted(join.data, key = lambda x: x[p.split])
+            
+            #------------------- write out .txt files -------------------
+            join.data = split_list(join.data, key = lambda x: x[p.split])
+            
+            for data, data_i in zipi(join.data):
+                #------------------- extract identical data to dict_ -------------------
+                dict_ = {}
+                for l, l_i in zipi(join.label):
+                    compare = data[0][l_i]
+                    for i in range(1, len(data)):
+                        if compare != data[i][l_i]:
+                            break
+                    else:
+                        dict_[l] = compare
+                
+                file_ = p.o.format(**dict_)
+                create_folder(path(file_))
+                
+                if file_[-3:] == "txt":
+                    ofs = open(file_, "w")
+                    ofs.write(" ".join(join.label)+"\n")
+                    for d in data:
+                        ofs.write(" ".join([str(x) for x in d])+"\n")
+                    GREEN("written {greenb}{}".format(file_, **color))
+                    ofs.close()
+                elif file_[-3:] == "xml":
+                    temp = open("temp.txt", "w")
+                    temp.write(" ".join(join.label)+"\n")
+                    for d in data:
+                        temp.write(" ".join([str(x) for x in d])+"\n")
+                    temp.close()
+                    
+                    txt_to_xml("temp.txt", file_)
+                
+                bash("rm temp.txt", silent = True)
+                
+        else:
+            for ns in nsp:
+                plot_helper(ns, p)
     else:
         #------------------- join data from different files -------------------    
         nsx = None
@@ -348,7 +401,7 @@ def plot(args = parameter):
                     nsx.label = ["{:0>2}_{}".format(ns_i, l) for l in nsx.label]
                     nsx.data = list(nsx.data)
             else:
-                if param_compare != ns.param:
+                if param_compare != ns.param and False:
                     ERROR("parameter not the same in {} and {}".format(nsx.file_, ns.file_))
                 else:
                     nsx.data += list(ns.data)

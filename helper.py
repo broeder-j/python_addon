@@ -7,6 +7,7 @@
 
 import os
 import re # for split_clean
+import itertools # for split_list
 import collections # for flatten
 from functools import partial # for split_clean
 
@@ -85,10 +86,15 @@ def path(file_):
     return os.path.dirname(file_)
 
 def create_folder(name):
-    if not readable(name):
-        if name not in ["", "."]:
-            os.system("mkdir {}".format(name))
-
+    folder_line = name.split("/")
+    prior = ""
+    for f in folder_line:
+        name = prior + f
+        if not readable(name):
+            if f not in ["", "."]:
+                os.system("mkdir {}".format(name))
+        prior += f + "/"
+    
 def cwd():
     return os.getcwd()
 
@@ -260,21 +266,25 @@ def depth(l):
         return 0
 
 #------------------- flatten a complicated list construction ---------------------------------------
-def flatten(l):
-    if isinstance(l, collections.Iterable):
-        return [a for i in l for a in flatten(i)]
+def flatten(list_):
+    if isinstance(list_, collections.Iterable):
+        return [a for i in list_ for a in flatten(i)]
     else:
-        return [l]
+        return [list_]
 
 #------------------- return transpose of a list -------------------
-def transpose(lis):
-    return [list(x) for x in zip(*lis)]
+def transpose(list_):
+    return [list(x) for x in zip(*list_)]
 
+def split_list(list_, key):
+    list_ = [list(x) for val, x in itertools.groupby(list_, key)]
+    return list_
+    
 
 #------------- computed len(flatten(list)) but without storing the list ----------------------------
-def nested_len(l):
-    if isinstance(l, collections.Iterable):
-        return sum([nested_len(x) for x in l])
+def nested_len(list_):
+    if isinstance(list_, collections.Iterable):
+        return sum([nested_len(x) for x in list_])
     else:
         return 1
 

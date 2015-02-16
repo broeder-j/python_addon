@@ -50,7 +50,7 @@ def xml_to_plot(file_):
     
     nsx.param = nsx.root.find("parameter").attrib # i.o. not to collide with HTML "param"
     nsx.label = split_clean(nsx.root.find("label").text)
-    nsx.data = np.array(to_number(split_clean([c.text for c in nsx.root.find("data").findall("d")]))).transpose()
+    nsx.data = transpose(to_number(split_clean([c.text for c in nsx.root.find("data").findall("d")])))
     
     opts = nsx.root.find("plot_option")
     if opts == None:

@@ -79,11 +79,12 @@ class parameter_class(namespace):
         self.flag = []
         
         i = 0
-        
         while i < last:
             i += 1 # first argument isn't needed since it is the prog-name
             w = argv[i]
-            w1 = argv[[i+1, i][i == last]]
+            w1 = "-" if i >= last else argv[i+1]
+            w2 = " " if i >= last - 1 else argv[i+2]
+            
             # checking if = sign
             if w1 == "=":
                 key, val = w, argv[i + 2]
@@ -94,7 +95,7 @@ class parameter_class(namespace):
                 continue
                 
             if w[0] == "-":
-                if w1[0] != "-": # parameter
+                if w1[0] != "-" and w2 != "=": # parameter
                     
                     #---------------- just checking for false input --------------------------------
                     if self.has_param(w[1:]):

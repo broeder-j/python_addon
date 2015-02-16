@@ -13,11 +13,16 @@ import xml.etree.ElementTree as xml
 import numpy as np
 
 def txt_to_xml(src, dest, comment = ["-"]):
-    create_folder(dest)
+    if not readable(src):
+        RED("could not read {}".format(src))
+        return
     
-    dest = dest + "/" + os.path.basename(src[:-3]) + "xml"
+    if dest[-3:] != "xml":
+        create_folder(dest)
+        dest = dest + "/" + os.path.basename(src[:-3]) + "xml"
+    
+    
     ifs = open(src, "r")
-    
     #------------------- data -------------------
     label = []
     data =  []
