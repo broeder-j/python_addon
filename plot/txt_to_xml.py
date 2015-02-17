@@ -18,9 +18,9 @@ def txt_to_xml(file_, dest, p):
     if not readable(file_):
         ERROR("could not read {}".format(src))
 
-    if filetype(dest) != "xml": #if folder
+    if filetype(dest) == None: #if folder
         create_folder(dest)
-        dest = dest + "/" + filename(file_, suffix = "xml")
+        dest += "/" + filename(file_, suffix = "xml")
     
     ifs = open(file_, "r")
     #------------------- data -------------------

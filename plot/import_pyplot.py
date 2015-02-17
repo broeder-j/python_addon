@@ -12,7 +12,7 @@ from matplotlib.pyplot import rc
 from matplotlib.font_manager import FontProperties
 rc("text", usetex=True)
 background_color = "#DDDDDD"
-grid_color = "white" #FAFAF7"
+grid_color = "white"
 rc("axes", facecolor = background_color)
 rc("axes", edgecolor = grid_color)
 rc("axes", linewidth = 1.2)

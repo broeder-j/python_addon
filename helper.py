@@ -90,7 +90,11 @@ def filename(file_, suffix = True):
         ERROR("wrong useage of filename!")
     
 def filetype(file_):
-    return file_.split(".")[-1]
+    res = filename(file_).split(".")
+    if len(res) == 1:
+        return None
+    else:
+        return res[-1]
 
 def path(file_):
     return os.path.dirname(file_)
@@ -295,7 +299,7 @@ def depth(l):
 
 #------------------- flatten a complicated list construction ---------------------------------------
 def flatten(list_):
-    if isinstance(list_, collections.Iterable):
+    if is_list(list_):
         return [a for i in list_ for a in flatten(i)]
     else:
         return [list_]
