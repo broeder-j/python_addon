@@ -23,9 +23,12 @@ class parameter_class(namespace):
         Initializes the class. Do not used self.res_names_ as keys for the dict. It will raise an error.
         """
         super(parameter_class, self).__init__()
-        self.res_names_ = ["arg", "flag", "res_names_"]
+        self.clear()
         
+    def clear(self):
+        namespace.clear(self)
         # if a key has an "_" at the end it is treated as "hidden" in the sense that it isn't printed
+        self.res_names_ = ["arg", "flag", "res_names_"]
         self.print_ = False
         self.warn_ = True
     
@@ -34,7 +37,7 @@ class parameter_class(namespace):
         String conversion for printing. If they key "print_" is set to True all keys with an trailing underscore will be printed as well. Good for hiding technical/private keys.
         """
         out = ""
-        for key in sorted(self.keys()):
+        for key in sorted(namespace.keys(self)):
             if not self.print_:
                 if key[-1] == "_":
                     continue
@@ -57,6 +60,7 @@ class parameter_class(namespace):
         - param = value
         - arg
         """
+        self.clear()
         pas = False
         
         #----------------------- regex for = notation ----------------------------------------------
@@ -95,57 +99,32 @@ class parameter_class(namespace):
                 continue
                 
             if w[0] == "-":
+                w = w[1:]
                 if w1[0] != "-" and w2 != "=": # parameter
                     
                     #---------------- just checking for false input --------------------------------
-                    if self.has_param(w[1:]):
-                        self.warn("parameter {0} already set to {1} -> overwrite to {2}".format(w[1:], self[w[1:]], w1))
+                    if w in self.param:
+                        self.warn("parameter {0} already set to {1} -> overwrite to {2}".format(w, self[w], w1))
                     #------------------ setting the parameter --------------------------------------
-                    self[w[1:]] = to_number(w1)
+                    self[w] = to_number(w1)
                     i += 1
                 else: # flag
                     #---------------- just checking for false input --------------------------------
-                    if self.has_flag(w[1:]):
-                        self.warn("flag {0} was already set".format(w[1:]))
+                    if w in self.flag:
+                        self.warn("flag {0} was already set".format(w))
                     else:
                         #------------------- setting the flag --------------------------------------
-                        self.flag.append(w[1:])
+                        self.flag.append(w)
             else:
                 if pas:
                     pas = False
                 else: # arg
                     #---------------- just checking for false input --------------------------------
-                    if self.has_arg(w):
+                    if w in self.arg:
                         self.warn("arg {0} was already set".format(w))
                     else:
                         #------------------- adding the arg ----------------------------------------
                         self.arg.append(w)
-                    
-    def has_arg(self, arg):
-        """
-        Checks if arg is in the parameter_class. An arg is an entry without a value, like a filename.
-        """
-        return arg in self.arg
-        
-    def has_flag(self, flag):
-        """
-        Checks if flag is set. A flag does not have a value. It is eighter on (has_flag -> True) or off (has_flag -> False)
-        """
-        if flag[0] == "-":
-            flag = flag[1:]
-        return flag in self.flag
-    
-    def has_param(self, param):
-        """
-        Checks if the key param is set. A param is a key with a value.
-        """
-        return param in self.keys()
-    
-    def has_key(self, key):
-        """
-        Checks if key is a parameter, flag or arg. It does not the same as the dict.has_key function, since flags and args aren't technically stored as keys.
-        """
-        return self.has_arg(key) or self.has_flag(key) or self.has_param(key)
     
     def __setitem__(self, key, val):
         """
@@ -159,6 +138,10 @@ class parameter_class(namespace):
     @property
     def param(self):
         return [k for k in namespace.keys(self) if k not in self.res_names_]
+    
+    def keys(self):
+        return self.param + self.flag + self.arg
+    
     
 parameter = parameter_class()
 

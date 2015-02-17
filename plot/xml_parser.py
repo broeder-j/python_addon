@@ -55,10 +55,10 @@ def xml_to_plot(file_):
     opts = nsx.root.find("plot_option")
     if opts == None:
         nsx.plot_option = [{}]
-        nsx.source = ""
+        nsx.source = None
     else:
         opt = opts.findall("opt")
-        nsx.source = opts.attrib["source"]
+        nsx.source = to_number(opts.attrib)
         nsx.plot_option = [to_number(p.attrib) for p in opt]
     
     nsx.plot_option_to_xml = lambda popt, sel = 0, mod = "update": plot_option_to_xml(nsx, popt, sel, mod)

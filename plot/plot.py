@@ -79,10 +79,10 @@ def get_select(xdata, ydata, additional, y_i, opt, kw):
     
     return xdata, ydata
 
-def plot_helper(nsx, p):
+def plot_handler(pns, p):
     #------------------- show available labels -------------------
-    if p.has_flag("l"):
-        for l, l_i in zipi(nsx.label):
+    if "l" in p.flag:
+        for l, l_i in zipi(pns.label):
             print("{green}pos {greenb}{:0>2}{green} = {green}{}{none}".format(l_i, l, **color))
         return
     #=================== plot ===================
@@ -117,6 +117,7 @@ def plot_helper(nsx, p):
                        , "markersize"
                        , "legend_loc"
                        ]
+    
     special_option = ["update", "isel", "osel", "conv", "l", "cp_opt", "conf"]
     
     
@@ -133,8 +134,8 @@ def plot_helper(nsx, p):
     isel = p.get("isel", 0)
     osel = p.get("osel", isel)
     
-    if nsx != None and len(nsx.plot_option) > isel:
-        opt.update(dict_select(nsx.plot_option[isel], valid_plot_option)) #overwrite by xml info
+    if pns != None and len(pns.plot_option) > isel:
+        opt.update(dict_select(pns.plot_option[isel], valid_plot_option)) #overwrite by xml info
     opt.update(dict_select(p, valid_plot_option))               #overwrite by argv info
     
     #------------------- delete parameter if given as flags -------------------
@@ -145,16 +146,16 @@ def plot_helper(nsx, p):
     opt_save = copy.deepcopy(opt) # for saving (we want to keep human readable labels, not 1,2,0)
     
     #=================== help and config print ===================
-    if p.has_key("conf"):
+    if "conf" in p.keys():
         print_conf(p, opt, legend_dict)
         return
-    if p.has_key("help"):
+    if "help" in p.keys():
         print_help(valid_plot_option, special_option, p.get("help", "all"))
         return
     
     #------------------- convert labels/string to numbers -------------------
-    label_to_number = lambda x: (-1 if x == "none" else nsx.label.index(x)) if is_str(x) else x
-    get_label = lambda lbl_nr, label, idx = None: (opt[label] if idx == None else opt[label][idx]) if label in opt.keys() else nsx.label[lbl_nr]
+    label_to_number = lambda x: (-1 if x == "none" else pns.label.index(x)) if is_str(x) else x
+    get_label = lambda lbl_nr, label, idx = None: (opt[label] if idx == None else opt[label][idx]) if label in opt.keys() else pns.label[lbl_nr]
     
     if is_str(opt.legend_loc):
         opt.legend_loc = legend_dict[opt.legend_loc]
@@ -196,7 +197,7 @@ def plot_helper(nsx, p):
     
     #------------------- lazy notation -------------------
     if opt.o[-4] != ".":
-        opt.o += "/" + filename(nsx.file_)[:-4] + ".pdf"
+        opt.o += "/" + filename(pns.file_)[:-4] + ".pdf"
     
     #=================== main plot ===================
     fig, ax = pyplot.subplots()
@@ -208,12 +209,12 @@ def plot_helper(nsx, p):
     
     for y, y_i in zipi(opt.y):
         #------------------- set data -------------------
-        xdata = nsx.data[opt.x[y_i]]
-        ydata = nsx.data[y]
+        xdata = pns.data[opt.x[y_i]]
+        ydata = pns.data[y]
         if "xerr" in opt.keys():
-            additional["xerr"] = nsx.data[opt.xerr[y_i]]
+            additional["xerr"] = pns.data[opt.xerr[y_i]]
         if "yerr" in opt.keys() and opt.yerr[y_i] != -1:
-            additional["yerr"] = nsx.data[opt.yerr[y_i]]
+            additional["yerr"] = pns.data[opt.yerr[y_i]]
         
         #------------------- apply manipulatros to data -------------------
         xdata, ydata = get_select(xdata, ydata, additional, y_i, opt, "dselect")
@@ -222,8 +223,8 @@ def plot_helper(nsx, p):
         if "yerr" in opt.keys() and opt.yerr[y_i] != -1:
             additional["yerr"] = apply_manipulator(additional["yerr"], y_i, opt, error = True)
         
-        p = len(ydata)//2
-        print(xdata[p], ydata[p], additional["yerr"][p])
+        #~ p = len(ydata)//2
+        #~ print(xdata[p], ydata[p], additional["yerr"][p])
         
         #------------------- style -------------------
         if "markersize" in opt.keys():
@@ -251,7 +252,7 @@ def plot_helper(nsx, p):
     
     #------------------- set title -------------------
     if "title" in opt.keys():
-        ax.set_title(opt.title.format(**nsx.param))
+        ax.set_title(opt.title.format(**pns.param))
     
     #------------------- set labels / legend -------------------
     if "xticks" in opt.keys():
@@ -279,7 +280,7 @@ def plot_helper(nsx, p):
             opt.parameter = opt.parameter[:-4]
         loc = opt.get("parameter_loc", [0, 0])
         
-        text = opt.parameter.format(**merge_dict({"nl": "\n"}, nsx.param))
+        text = opt.parameter.format(**merge_dict({"nl": "\n"}, pns.param))
         
         ax.text(loc[0], loc[1]
             , text
@@ -296,47 +297,82 @@ def plot_helper(nsx, p):
     fig.tight_layout()
     
     create_folder(path(opt.o))
-    
     fig.savefig(opt.o)
     
-    nsx.plot_option_to_xml(opt_save, sel = osel, mod="overwrite")
-    print("{green}ploted {greenb}{} {green}to {greenb}{}{green} with selection {greenb}{}{green} (-> {}){none}".format(nsx.file_, opt.o, isel, osel, **color))
+    pns.plot_option_to_xml(opt_save, sel = osel, mod="overwrite")
+    print("{green}ploted {greenb}{} {green}to {greenb}{}{green} with selection {greenb}{}{green} (-> {}){none}".format(pns.file_, opt.o, isel, osel, **color))
     reset_lim()
 
-def plot(args = parameter):
-    #------------------- get file names -------------------
-    p = args
-    files = p["arg"]
-    #=================== helper fct ===================
-    #------------------- convert txt to xml, conv specifies dest location / update xml -------------------
-    if "conv" in p.param:
+def join_pns(all_pns, p):
+    if len(all_pns) == 0:
+        return None
+        
+    elif len(all_pns) == 1:
+        return all_pns[0]
+        
+    else:
+        for ns, ns_i in zipi(all_pns):
+            if ns_i == 0:
+                pns = ns
+                param_compare = pns.param
+                p.isel = p.get("isel", 1)
+                pns.label = ["{:0>2}-{}".format(ns_i, l) for l in pns.label]
+                pns.data = list(pns.data)
+            else:
+                if param_compare != ns.param:
+                    ERROR("parameter not the same in {} and {}".format(pns.file_, ns.file_))
+                else:
+                    pns.data += list(ns.data)
+                    pns.label += ["{:0>2}-{}".format(ns_i, l) for l in ns.label]
+        return pns
+    
+def plot(p = parameter):
+    p.flag = p.get("flag", []) #since a namespace may lack flag
+    
+    files = p.arg
+    
+    if "conv" in p.keys():
         for file_ in files:
-            txt_to_xml(file_, p.conv)
+            txt_to_xml(file_, p.conv, p)
         return
     
     if "update" in p.flag:
         for file_ in files:
+            pns = xml_to_plot(file_)
             dir_ = path(file_)
-            nsx = xml_to_plot(file_)
-            txt_to_xml(nsx.source, dir_)
-    
-    #------------------- read all file in namespace plot -------------------
-    nsp = []
-    for file_ in files:
-        nsp.append(xml_to_plot(file_))
-    
-    #------------------- copy plot_options from file specified in cp_opt -------------------
-    if "cp_opt" in p.param:
-        ncp = nsp[0]
-        opt = ncp.plot_option
-        isel, osel =  p.cp_opt
-        for nsx in nsp[1:]:
-            nsx.plot_option_to_xml(opt[isel], sel = osel, mod="overwrite")
-            GREEN("{green}copied plot_option from {greenb}{} {green}sel:{greenb}{} {green}to {greenb}{} {green}sel:{greenb}{}{green}".format(ncp.file_, isel, nsx.file_, osel, **color))
+            if pns.source != None:
+                p.comment = p.get("comment", pns.source["comment"])
+                txt_to_xml(pns.source["file_"], pns.file_, p)
         return
     
+    if "cp_opt" in p.keys() or "cp_opt" in p.flag:
+        if "cp_opt" in p.keys():
+            isel, osel =  p.cp_opt
+        else:
+            isel, osel =  0, 0
+        
+        opt = xml_to_plot(files[0]).plot_option
+        for file_ in files[1:]:
+            xml_to_plot(file_).plot_option_to_xml(opt[isel], sel = osel, mod="overwrite")
+            YELLOW("copied opt {yellowb}{} {yellow}from {yellowb}{} {yellow}to {yellowb}{} {yellow}opt {yellowb}{}".format(isel, files[0], file_, osel, **color))
+        return
+    
+    
+    if "plot" in p.flag:
+        all_pns = []
+        for file_ in files:
+            all_pns.append(xml_to_plot(file_))
+        
+        if "parallel" in p.flag:
+            for pns in all_pns:
+                plot_handler(pns, p)
+        else:
+            pns = join_pns(all_pns, p)
+            plot_handler(pns, p)
+        
+def plot2(args = parameter):
     if "parallel" in p.flag:
-        if "split" in p.param and "a3data" in p.param:
+        if "split" in p.keys() and "a3data" in p.keys():
             #------------------- prepare join namespace -------------------
             join = namespace()
             join.label = nsp[0].label + [p.a3data[0]]
@@ -385,25 +421,4 @@ def plot(args = parameter):
                     txt_to_xml("temp.txt", file_)
                 
                 bash("rm temp.txt", silent = True)
-                
-        else:
-            for ns in nsp:
-                plot_helper(ns, p)
-    else:
-        #------------------- join data from different files -------------------    
-        nsx = None
-        for ns, ns_i in zipi(nsp):
-            if ns_i == 0:
-                nsx = ns
-                param_compare = nsx.param
-                if len(nsp) > 1:
-                    p.isel = p.get("isel", 1)
-                    nsx.label = ["{:0>2}_{}".format(ns_i, l) for l in nsx.label]
-                    nsx.data = list(nsx.data)
-            else:
-                if param_compare != ns.param and False:
-                    ERROR("parameter not the same in {} and {}".format(nsx.file_, ns.file_))
-                else:
-                    nsx.data += list(ns.data)
-                    nsx.label += ["{:0>2}_{}".format(ns_i, l) for l in ns.label]
-        plot_helper(nsx, p)
+    
