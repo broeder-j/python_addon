@@ -17,6 +17,7 @@ def expand(key, opt, pns):
                      , "yerr": lambda x: is_list(x)
                      , "ylabel": lambda x: is_list(x)
                      , "acc": lambda x: is_list(x)
+                     , "triconv": lambda x: is_list(x)
                      , "linreg": lambda x: is_list(x[0])
                      , "dsel": lambda x: is_list(x[0])
                      , "psel": lambda x: is_list(x[0])

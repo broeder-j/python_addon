@@ -64,6 +64,28 @@ def apply_manipulator(data, idx, opt, error = False):
                 data = np.sqrt(np.add.accumulate(np.square(data)))
             else:
                 data = np.add.accumulate(data)
+    
+    def triangular_convolution(values, N):
+        res = []
+        
+        weight = [min(i+1, 2*N+1-i) for i in range(2*N+1)] #triangular shape [1,2,3,2,1]
+        weight = weight[N:]+weight[:N] #shift it [3,2,1,1,2]
+        for v, v_i in zipi(values):
+            lower = max(0, v_i - N)
+            upper = min(len(values) - 1, v_i + N)
+            n = sum(weight[v_i-i] for i in range(lower, upper + 1))
+            s = sum(values[i]*weight[v_i-i] for i in range(lower, upper+1))
+            s /= n
+            res.append(s)
+            
+        return res
+    
+    if "triconv" in opt.keys():
+        if opt.triconv[idx] != 0:
+            if error:
+                data = triangular_convolution(data, opt.triconv[idx])
+            else:
+                data = triangular_convolution(data, opt.triconv[idx])
         
     return data
 
@@ -104,6 +126,7 @@ def plot_handler(pns, p):
            , ("parameter_loc", [])
            # manipulation
            , ("acc", [expand])
+           , ("triconv", [expand])
            , ("dsel", [expand])
            , ("psel", [expand])
            , ("linreg", [expand])

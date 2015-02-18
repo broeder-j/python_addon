@@ -91,7 +91,7 @@ def filename(file_, suffix = True):
     
 def filetype(file_):
     res = filename(file_).split(".")
-    if len(res) == 1:
+    if len(res) == 1 or res[-1] == "":
         return None
     else:
         return res[-1]
