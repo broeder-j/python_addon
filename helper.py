@@ -164,7 +164,8 @@ def to_str(obj):
         res += "]"
         return res
     elif is_str(obj):
-        return str([obj])[1:-1] #trick since the list chooses the right quotes
+        return str(obj)
+        #~ return str([obj])[1:-1] #trick since the list chooses the right quotes
     else:
         return str(obj)
 

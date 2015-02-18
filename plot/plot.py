@@ -11,6 +11,7 @@ from ..parameter import *
 from .help_plot import *
 from .xml_parser import *
 from .import_pyplot import *
+from . import valid_options as vo
 from .translator import *
 
 import copy
@@ -127,8 +128,9 @@ def plot_handler(pns, p):
            , ("ncol", [])
            ])
     
-    special_option = ["update", "isel", "osel", "conv", "l", "cp_opt", "conf"]
-    
+    #------------------- force sync -------------------
+    if set(vo.valid_options) != set(vpo.keys()):
+        ERROR("update valid_options.py or plot.py! diff in valid_options: {}".format(set(vpo.keys()).symmetric_difference(set(vo.valid_options))))
     
     #------------------- defaults options -------------------
     opt = namespace()
@@ -160,12 +162,10 @@ def plot_handler(pns, p):
     opt.markersize = 6
     
     #=================== help and config print ===================
-    if "conf" in p.keys():
-        print_conf(p, opt, legend_dict)
-        return
-    if "help" in p.keys():
-        print_help(vpo.keys(), special_option, p.get("help", "all"))
-        return
+    if print_conf(p, opt):
+        return 
+    if print_help(p):
+        return 
     
     for k, pipe in vpo.items():
         if k in opt.keys():
