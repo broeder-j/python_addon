@@ -305,7 +305,6 @@ def join_pns(all_pns, p):
     
 def plot(p = parameter):
     p.flag = p.get("flag", []) #since a namespace may lack flag
-    
     files = p.arg
     
     if "conv" in p.keys():
@@ -335,17 +334,16 @@ def plot(p = parameter):
         return
     
     
-    if "plot" in p.flag:
-        all_pns = []
-        for file_ in files:
-            all_pns.append(xml_to_plot(file_))
-        
-        if "parallel" in p.flag:
-            for pns in all_pns:
-                plot_handler(pns, p)
-        else:
-            pns = join_pns(all_pns, p)
+    all_pns = []
+    for file_ in files:
+        all_pns.append(xml_to_plot(file_))
+    
+    if "parallel" in p.flag:
+        for pns in all_pns:
             plot_handler(pns, p)
+    else:
+        pns = join_pns(all_pns, p)
+        plot_handler(pns, p)
         
 def plot2(args = parameter):
     if "parallel" in p.flag:

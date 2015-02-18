@@ -16,7 +16,7 @@ import numpy as np
 def plot_option_to_xml(nsx, popt, sel = 0, mod = "update"):
     opts = nsx.root.find("plot_option")
     
-    popt = dict([(k, str(v)) for k, v in popt.items()])
+    popt = dict([(k, to_str(v)) for k, v in popt.items()])
     
     if opts == None: #------------------- create new element if tag not found -------------------
         opts = xml.Element("plot_option")

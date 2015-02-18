@@ -142,6 +142,11 @@ class parameter_class(namespace):
     def keys(self):
         return self.param + self.flag + self.arg
     
+    def get(self, key, default = None):
+        if key in self.keys() + ["flag", "arg"]:
+            return self[key]
+        else:
+            return default
     
 parameter = parameter_class()
 
