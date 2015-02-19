@@ -155,7 +155,7 @@ def bash_if(flag, action, silent = False):
     """
     If the flag is in the parameter instance of parameter_class, the action will be executed by as a bash command if it is a string and be called otherwise (assumption action == python function with no args)
     """
-    if parameter.has_flag(flag):
+    if flag in parameter.flag:
         if is_str(action): # normal bash cmd
             bash(action, silent)
         elif is_function(action): # fct call

@@ -40,7 +40,7 @@ def plot_option_to_xml(nsx, popt, sel = 0, mod = "update"):
     # write back to file
     nsx.tree.write(nsx.file_, encoding="utf-8", xml_declaration = True)
 
-def tree_to_plot(tree, file_ = "virtual"):
+def tree_to_plot(tree, file_):
     nsx = namespace()
     nsx.file_ = file_
     

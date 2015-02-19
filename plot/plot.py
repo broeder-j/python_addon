@@ -294,7 +294,7 @@ def plot_handler(pns, p):
     fig.savefig(opt.o)
     
     pns.plot_option_to_xml(opt_save, sel = spez.osel, mod="overwrite")
-    print("{green}ploted {greenb}{} {green}to {greenb}{}{green} with selection {greenb}{}{green} (-> {}){none}".format(pns.file_, opt.o, spez.isel, spez.osel, **color))
+    print("{green}plotted {greenb}{} {green}to {greenb}{}{green} with selection {greenb}{}{green} (-> {}){none}".format(pns.file_, opt.o, spez.isel, spez.osel, **color))
     reset_lim()
 
 def join_pns(all_pns, p):

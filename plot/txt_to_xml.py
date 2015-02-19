@@ -71,7 +71,7 @@ def txt_to_intermed(file_, p):
     param = {}
     #------------------- read txt file -------------------
     all_lines = ifs.readlines()
-    if all_lines[1][:6] == "#param": #read param line if there
+    if len(all_lines[1]) > 6 and all_lines[1][:6] == "#param": #read param line if there
         for param_item in split_clean(all_lines[1][6:]):
             key, val = to_number(param_item.split("="))
             param[key] = val
