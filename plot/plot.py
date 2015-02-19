@@ -10,9 +10,9 @@ from ..parameter import *
 
 from .help_plot import *
 from .xml_parser import *
+from .translator import *
 from .import_pyplot import *
 from . import valid_options as vo
-from .translator import *
 
 import copy
 import collections
@@ -359,7 +359,8 @@ def plot(p = parameter):
     
     all_pns = []
     for file_ in files:
-        all_pns.append(xml_to_plot(file_))
+        tree = file_to_tree(file_, p)
+        all_pns.append(tree_to_plot(tree, file_))
     
     if "parallel" in p.flag:
         for pns in all_pns:

@@ -12,15 +12,57 @@ from .xml_helper import *
 import xml.etree.ElementTree as xml
 import numpy as np
 
-def txt_to_xml(file_, dest, p):
+def find_nodes(tree):
+    root   = tree.getroot()
+    Eopt   = root.find("plot_option")
+    Eparam = root.find("parameter")
+    Elabel = root.find("label")
+    Edata  = root.find("data")
+    return Eopt, Eparam, Elabel, Edata
+
+def get_old_tree(dest):
+    tree   = xml.parse(dest)
+    Eopt, Eparam, Elabel, Edata = find_nodes(tree)
+    Eparam.clear()
+    Elabel.clear()
+    Edata.clear()
+    return tree
+
+def get_new_tree():
+    root   = xml.Element("plot")
+    Eopt   = xml.Element("plot_option")
+    Eparam = xml.Element("parameter")
+    Elabel = xml.Element("label")
+    Edata  = xml.Element("data")
+    tree   = xml.ElementTree(root)
+    root.append(Eopt)
+    root.append(Eparam)
+    root.append(Elabel)
+    root.append(Edata)
+    return tree
+
+def fill_data(tree, param, label, data, file_, comment):
+    # idx addition
+    if label[0] != "index":
+        label.insert(0, "index")
+        for line, line_i in zipi(data):
+            line.insert(0, line_i)
+    
+    Eopt, Eparam, Elabel, Edata = find_nodes(tree)
+    Eparam.attrib = param
+    Elabel.text = " ".join(label)
+    for line in data:
+        d = xml.Element("d")
+        d.text = " ".join([str(i) for i in line])
+        Edata.append(d)
+    Eopt.attrib["file_"] = file_
+    Eopt.attrib["comment"] = to_str(comment)
+    
+def txt_to_intermed(file_, p):
     comment = p.get("comment", ["-", "#"])
     
     if not readable(file_):
         ERROR("could not read {}".format(src))
-
-    if filetype(dest) == None: #if folder
-        create_folder(dest)
-        dest += "/" + filename(file_, suffix = "xml")
     
     ifs = open(file_, "r")
     #------------------- data -------------------
@@ -36,64 +78,31 @@ def txt_to_xml(file_, dest, p):
     
     lines = [to_number(split_clean(l)) for l in all_lines if l[0] not in comment]
     label = lines[0]
+    data = lines[1:]
     
-    data = transpose(lines[1:])
-    
-    #------------------- transform indentical data to parameter -------------------
-    #~ del_idx = []
-    #~ for k in range(len(data)):
-        #~ same = True
-        #~ for i in range(len(data[k])):
-            #~ if i == 0:
-                #~ compare = data[k][i]
-            #~ else:
-                #~ if compare != data[k][i]:
-                    #~ same = False
-                    #~ break
-        #~ if same:
-            #~ del_idx.insert(0, k)
-            #~ param[label[k]] = str(compare)
-    #~ 
-    #~ for d in del_idx:
-        #~ del data[d]
-        #~ del label[d]
+    return param, label, data, file_, comment
 
-    data = transpose(data)
+def txt_to_tree(file_, p):
+    tree = get_new_tree()
+    l = txt_to_intermed(file_, p)
+    fill_data(tree, *l)
+    return tree
+
+def txt_to_xml(file_, dest, p): #output
     #------------------- generate/read xml -------------------
+    if filetype(dest) == None: #if folder
+        create_folder(dest)
+        dest += "/" + filename(file_, suffix = "xml")
+    
     if readable(dest):
-        tree   = xml.parse(dest)
-        root   = tree.getroot()
-        Eopt   = root.find("plot_option")
-        Eopt.attrib["file_"] = file_
-        Eopt.attrib["comment"] = to_str(comment)
-        Eparam = root.find("parameter")
-        Eparam.clear()
-        Elabel = root.find("label")
-        Elabel.clear()
-        Edata  = root.find("data")
-        Edata.clear()
+        tree = get_old_tree(dest)
     else:
-        root   = xml.Element("plot")
-        Eopt   = xml.Element("plot_option", {"file_": file_, "comment": to_str(comment)})
-        Eparam = xml.Element("parameter")
-        Elabel = xml.Element("label")
-        Edata  = xml.Element("data")
-        tree   = xml.ElementTree(root)
-        root.append(Eopt)
-        root.append(Eparam)
-        root.append(Elabel)
-        root.append(Edata)
+        tree = get_new_tree()
     
+    l = txt_to_intermed(file_, p)
+    fill_data(tree, *l)
     
-    Eparam.attrib = param
-    Elabel.text = " ".join(label)
-    for line in data:
-        d = xml.Element("d")
-        d.text = " ".join([str(i) for i in line])
-        Edata.append(d)
-    
-    prettify(root)
-    
+    prettify(tree.getroot())
     tree.write(dest, encoding="utf-8", xml_declaration = True)
     
     if "update" in p.flag:

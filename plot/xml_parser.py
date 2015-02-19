@@ -40,12 +40,11 @@ def plot_option_to_xml(nsx, popt, sel = 0, mod = "update"):
     # write back to file
     nsx.tree.write(nsx.file_, encoding="utf-8", xml_declaration = True)
 
-
-def xml_to_plot(file_):
+def tree_to_plot(tree, file_ = "virtual"):
     nsx = namespace()
     nsx.file_ = file_
     
-    nsx.tree = xml.parse(nsx.file_)
+    nsx.tree = tree
     nsx.root = nsx.tree.getroot()
     
     nsx.param = nsx.root.find("parameter").attrib # i.o. not to collide with HTML "param"
@@ -61,6 +60,23 @@ def xml_to_plot(file_):
         nsx.source = to_number(opts.attrib)
         nsx.plot_option = [to_number(p.attrib) for p in opt]
     
-    nsx.plot_option_to_xml = lambda popt, sel = 0, mod = "update": plot_option_to_xml(nsx, popt, sel, mod)
+    if filetype(file_) == "xml":
+        nsx.plot_option_to_xml = lambda popt, sel = 0, mod = "update": plot_option_to_xml(nsx, popt, sel, mod)
+    else:
+        nsx.plot_option_to_xml = lambda popt, sel = 0, mod = "update": None #since a txt file should not save options
     
     return nsx
+    
+def xml_to_plot(file_):
+    tree = xml.parse(file_)
+    nsx = tree_to_plot(tree, file_)
+    return nsx
+
+def file_to_tree(file_, p):
+    ft = filetype(file_)
+    if ft == "xml":
+        tree = xml.parse(file_)
+    elif ft == "txt":
+        tree = txt_to_tree(file_, p)
+    return tree
+        
