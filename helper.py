@@ -314,10 +314,23 @@ def split_list(list_, key):
     return list_
     
 
+#------------- computed length of a list while only counting len(l) if l has no list element ----------------------------
+# i.e. [[n, [y, y]], n, [y, y]] would give 4
+def leaf_len(list_):
+    test = lambda x: isinstance(x, collections.Iterable) and not is_str(x)
+    
+    if test(list_):
+        for it in list_:
+            if test(it):
+                return sum(leaf_len(x) for x in list_)
+        return len(list_)
+    else:
+        return 0
+
 #------------- computed len(flatten(list)) but without storing the list ----------------------------
 def nested_len(list_):
     if isinstance(list_, collections.Iterable):
-        return sum([nested_len(x) for x in list_])
+        return sum(nested_len(x) for x in list_)
     else:
         return 1
 

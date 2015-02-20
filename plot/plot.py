@@ -182,7 +182,7 @@ def plot_handler(pns, p):
     #------------------- non save defaults -------------------
     opt.fontsize = opt.get("fontsize", 12)
     opt.linreg = opt.get("linreg", "none")
-    opt.markersize = 6
+    opt.markersize = opt.get("markersize", 6)
     
     #=================== help and config print ===================
     if print_conf(p, opt):
@@ -223,7 +223,6 @@ def plot_handler(pns, p):
         
         #------------------- style -------------------
         additional["markersize"] = opt.markersize[y_i]
-            
         additional["fmt"] = opt.style[0]
         opt.style.rotate(-1)
         
@@ -329,6 +328,10 @@ def join_pns(all_pns, p):
 def plot(p = parameter):
     p.flag = p.get("flag", []) #since a namespace may lack flag
     files = p.arg
+    
+    if p.get("usetex", 1):
+        usetex()
+    
     
     if "conv" in p.keys():
         for file_ in files:

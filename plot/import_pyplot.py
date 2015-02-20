@@ -10,7 +10,6 @@ matplotlib.use("agg") #only save / no show / must happen before pyplot / "pdf" a
 from matplotlib import pyplot
 from matplotlib.pyplot import rc
 from matplotlib.font_manager import FontProperties
-rc("text", usetex=True)
 background_color = "#DDDDDD"
 grid_color = "white"
 rc("axes", facecolor = background_color)
@@ -25,8 +24,12 @@ rc("xtick.major",size =0 )
 rc("xtick.minor",size =0 )
 rc("ytick.major",size =0 )
 rc("ytick.minor",size =0 )
-rc("font",**{"family":"sans-serif", "sans-serif":["Gill Sans MT"]})
+
+def usetex():
+    rc("text", usetex=True)
+    rc("font",**{"family":"sans-serif", "sans-serif":["Gill Sans MT"]})
+    rc("mathtext", fontset="stixsans")
+
 #~ rc("text.latex", preamble=r"\usepackage{cmbright}")
-rc("mathtext", fontset="stixsans")
 
 import numpy as np

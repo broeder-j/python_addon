@@ -59,7 +59,7 @@ def fill_data(tree, param, label, data, file_, comment):
     Eopt.attrib["comment"] = to_str(comment)
     
 def txt_to_intermed(file_, p):
-    comment = p.get("comment", ["-", "#"])
+    comment = make_list(p.get("comment", ["#"]))
     
     if not readable(file_):
         ERROR("could not read {}".format(src))
