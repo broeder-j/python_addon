@@ -143,7 +143,7 @@ def to_number(obj, strip_quotes = True):
         pass
     
     test = obj.strip()
-    if test[0] == "[" and test[-1] == "]":
+    if len(test) != 0 and test[0] == "[" and test[-1] == "]":
         #~ l = test[1:-1].split(",") #too easy, splits [[a, b], [c, d]] -> [[a<> b]<> [c<> d]]
         l = test[1:-1].split(",")
         l = re.split(",(?=(?:[^\\[\\]]*(?:\\[[^\\[\\]]*\\]))*[^\\[\\]]*$)", test[1:-1]) # splits only , outside of [] bc of recursive lists [[a, b], [c, d]]
@@ -216,6 +216,10 @@ class namespace:
         return self.__dict__.keys()
     def items(self):
         return self.__dict__.items()
+    
+    def __eq__(self, rhs):
+        return rhs.__dict__ == self.__dict__
+        
     
     def print_item(self, key):
         sv = str(self.__dict__[key])
