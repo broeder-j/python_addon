@@ -305,6 +305,40 @@ class polygon():
     def __getitem__(self, key):
         return self.data[key]
 
+class path():
+    """
+    d="M200,300 L400,50 L600,300 L800,550 L1000,300"
+    "A rx ry x-axis-rotation large-arc-flag (0) sweep-flag (0) x y"
+    www.w3.org/TR/SVG/shapes.html#PolygonElement
+    http://www.w3.org/TR/SVG/paths.html
+    """
+    #------------------- ctor ------------------- 
+    def __init__(self, **kwargs):
+        self.default()
+        self.internal = ["type"]
+        
+        kwargs = unpack_lazy(kwargs)
+        for key in kwargs:
+            self[key] = kwargs[key]
+    
+    def default(self):
+        self.data = {}
+        self.data["type"] = "item"
+    #------------------- const ------------------- 
+    def __str__(self):
+        return str(self.data)
+    
+    def svg_parse(self):
+        var = "    <path " + parse_dict(self.data, self.internal) + "/>\n"
+        return var
+        
+    #------------------- getter/setter ------------------- 
+    def __setitem__(self, key, val):
+        self.data[key] = val
+        
+    def __getitem__(self, key):
+        return self.data[key]
+
 class text():
     """
     x, y, dx, dy (offset), text
