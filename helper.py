@@ -163,6 +163,8 @@ def to_str(obj):
                 res += ","
         res += "]"
         return res
+    elif is_dict(obj):
+        return dict([(k, to_str(v)) for k, v in obj.items()])
     elif is_str(obj):
         return str(obj)
         #~ return str([obj])[1:-1] #trick since the list chooses the right quotes
@@ -219,7 +221,19 @@ class namespace:
     
     def __eq__(self, rhs):
         return rhs.__dict__ == self.__dict__
+    
+    def assert_(self, arg, look = None):
+        if look == None:
+            look = self.keys()
+            name = "keys"
+        else:
+            name = look + "s"
+            look = self[look]
         
+        list_ = make_list(arg)
+        res = list(set(list_).difference(set(look)))
+        if len(res) != 0:
+            ERROR("{} {} are missing!".format(name, str(res)[1:-1]))
     
     def print_item(self, key):
         sv = str(self.__dict__[key])

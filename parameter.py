@@ -148,6 +148,13 @@ class parameter_class(namespace):
         else:
             return default
     
+    def get_namespace(self):
+        res = namespace(self.__dict__)
+        del res.warn_
+        del res.print_
+        del res.res_names_
+        return res
+    
 parameter = parameter_class()
 
 #--------------------------- parameter action ------------------------------------------------------
