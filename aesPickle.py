@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # 
 # Author:  Mario S. Könz <mskoenz@gmx.net>
@@ -6,11 +6,7 @@
 # File:    aesPickle.py
 
 import sys
-
-if __name__ == "__main__":
-    print("aesPickle.py")
     
-
 try:
     import cPickle as pickle
 except ImportError:
@@ -19,7 +15,7 @@ except ImportError:
 from Crypto import Random
 from Crypto.Cipher import AES
 
-from .helper import *
+from .helper import * 
 
 validate = b"  you may pass  "
 

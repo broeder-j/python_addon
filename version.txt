@@ -1,3 +1,5 @@
+v010: added multiple helper like read_status
+
 v006: added svg module (py27 py3) not imported automatic
 
 v005: fixed multiple bugs, started python_addon repo

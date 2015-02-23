@@ -1,11 +1,11 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # 
 # Author:  Mario S. Könz <mskoenz@gmx.net>
 # Date:    27.08.2014 15:46:06 CEST
 # File:    svg.py
 
-from .helper import *
+from .helper import * 
 from .parameter import bash
 import numpy as np
 
@@ -85,10 +85,10 @@ def parse_dict(data, no_print, only_print = None):
     
     def special_case(key, val):
         if is_number(val):
-            val = "{:.3f}".format(val) #for nicer svg code
+            val = "{:.3f}".format(val) # for nicer svg code
         
         if val in ref_name and key != "id":
-            val =  "url(#" + val + ")"
+            val = "url(#" + val + ")"
         
         return key.replace("_", "-") + ' = "' + str(val) + '" '
     
@@ -107,7 +107,7 @@ class rect():
     x, y, width, height, rx, ry # rx, ry stand for rounded edges
     http://www.w3.org/TR/SVG/shapes.html#RectElement
     """
-    #------------------- ctor ------------------- 
+    #----------------------------- ctor ------------------------------------------------------------
     def __init__(self, **kwargs):
         self.default()
         self.internal = ["type"]
@@ -119,7 +119,7 @@ class rect():
     def default(self):
         self.data = {}
         self.data["type"] = "item"
-    #------------------- const ------------------- 
+    #----------------------------- const -----------------------------------------------------------
     def __str__(self):
         return str(self.data)
     
@@ -129,7 +129,7 @@ class rect():
         var += "/>\n"
         return var
         
-    #------------------- getter/setter ------------------- 
+    #-------------------------- getter/setter ------------------------------------------------------
     def __setitem__(self, key, val):
         self.data[key] = val
         
@@ -141,7 +141,7 @@ class circle():
     cx, cy, r
     http://www.w3.org/TR/SVG/shapes.html#CircleElement
     """
-    #------------------- ctor ------------------- 
+    #----------------------------- ctor ------------------------------------------------------------
     def __init__(self, **kwargs):
         self.default()
         self.internal = ["type"]
@@ -153,7 +153,7 @@ class circle():
     def default(self):
         self.data = {}
         self.data["type"] = "item"
-    #------------------- const ------------------- 
+    #----------------------------- const -----------------------------------------------------------
     def __str__(self):
         return str(self.data)
     
@@ -163,7 +163,7 @@ class circle():
         var += "/>\n"
         return var
         
-    #------------------- getter/setter ------------------- 
+    #-------------------------- getter/setter ------------------------------------------------------
     def __setitem__(self, key, val):
         self.data[key] = val
         
@@ -175,7 +175,7 @@ class ellipse():
     cx, cy, rx, ry
     http://www.w3.org/TR/SVG/shapes.html#CircleElement
     """
-    #------------------- ctor ------------------- 
+    #----------------------------- ctor ------------------------------------------------------------
     def __init__(self, **kwargs):
         self.default()
         self.internal = ["type"]
@@ -187,7 +187,7 @@ class ellipse():
     def default(self):
         self.data = {}
         self.data["type"] = "item"
-    #------------------- const ------------------- 
+    #----------------------------- const -----------------------------------------------------------
     def __str__(self):
         return str(self.data)
     
@@ -197,7 +197,7 @@ class ellipse():
         var += "/>\n"
         return var
         
-    #------------------- getter/setter ------------------- 
+    #-------------------------- getter/setter ------------------------------------------------------
     def __setitem__(self, key, val):
         self.data[key] = val
         
@@ -210,7 +210,7 @@ class line():
     http://www.w3.org/TR/SVG/shapes.html#LineElement
     http://www.w3schools.com/svg/svg_stroking.asp
     """
-    #------------------- ctor ------------------- 
+    #----------------------------- ctor ------------------------------------------------------------
     def __init__(self, **kwargs):
         self.default()
         self.internal = ["type"]
@@ -222,7 +222,7 @@ class line():
     def default(self):
         self.data = {}
         self.data["type"] = "item"
-    #------------------- const ------------------- 
+    #----------------------------- const -----------------------------------------------------------
     def __str__(self):
         return str(self.data)
     
@@ -232,7 +232,7 @@ class line():
         var += "/>\n"
         return var
         
-    #------------------- getter/setter ------------------- 
+    #-------------------------- getter/setter ------------------------------------------------------
     def __setitem__(self, key, val):
         self.data[key] = val
         
@@ -245,7 +245,7 @@ class polyline():
     http://www.w3.org/TR/SVG/shapes.html#PolylineElement
     https://mdn.mozillademos.org/files/731/SVG_Stroke_Linejoin_Example.png
     """
-    #------------------- ctor ------------------- 
+    #----------------------------- ctor ------------------------------------------------------------
     def __init__(self, **kwargs):
         self.default()
         self.internal = ["type"]
@@ -257,7 +257,7 @@ class polyline():
     def default(self):
         self.data = {}
         self.data["type"] = "item"
-    #------------------- const ------------------- 
+    #----------------------------- const -----------------------------------------------------------
     def __str__(self):
         return str(self.data)
     
@@ -265,7 +265,7 @@ class polyline():
         var = "    <polyline " + parse_dict(self.data, self.internal) + "/>\n"
         return var
         
-    #------------------- getter/setter ------------------- 
+    #-------------------------- getter/setter ------------------------------------------------------
     def __setitem__(self, key, val):
         self.data[key] = val
         
@@ -278,7 +278,7 @@ class polygon():
     www.w3.org/TR/SVG/shapes.html#PolygonElement
     https://mdn.mozillademos.org/files/731/SVG_Stroke_Linejoin_Example.png
     """
-    #------------------- ctor ------------------- 
+    #----------------------------- ctor ------------------------------------------------------------
     def __init__(self, **kwargs):
         self.default()
         self.internal = ["type"]
@@ -290,7 +290,7 @@ class polygon():
     def default(self):
         self.data = {}
         self.data["type"] = "item"
-    #------------------- const ------------------- 
+    #----------------------------- const -----------------------------------------------------------
     def __str__(self):
         return str(self.data)
     
@@ -298,7 +298,7 @@ class polygon():
         var = "    <polygon " + parse_dict(self.data, self.internal) + "/>\n"
         return var
         
-    #------------------- getter/setter ------------------- 
+    #-------------------------- getter/setter ------------------------------------------------------
     def __setitem__(self, key, val):
         self.data[key] = val
         
@@ -344,7 +344,7 @@ class text():
     x, y, dx, dy (offset), text
     http://www.w3.org/TR/SVG/text.html#TextElement
     """
-    #------------------- ctor ------------------- 
+    #----------------------------- ctor ------------------------------------------------------------
     def __init__(self, **kwargs):
         self.default()
         self.internal = ["type", "text"]
@@ -356,7 +356,7 @@ class text():
     def default(self):
         self.data = {}
         self.data["type"] = "item"
-    #------------------- const ------------------- 
+    #----------------------------- const -----------------------------------------------------------
     def __str__(self):
         return str(self.data)
     
@@ -366,7 +366,7 @@ class text():
         var += "    </text>\n"
         return var
         
-    #------------------- getter/setter ------------------- 
+    #-------------------------- getter/setter ------------------------------------------------------
     def __setitem__(self, key, val):
         self.data[key] = val
         
@@ -379,7 +379,7 @@ class lingrad():
     http://www.w3.org/TR/SVG/pservers.html#LinearGradients
     http://www.w3schools.com/svg/svg_grad_linear.asp
     """
-    #------------------- ctor ------------------- 
+    #----------------------------- ctor ------------------------------------------------------------
     def __init__(self, **kwargs):
         global ref_name
         ref_name.append(kwargs["id"])
@@ -394,19 +394,19 @@ class lingrad():
     def default(self):
         self.data = {}
         self.data["type"] = "def"
-    #------------------- const ------------------- 
+    #----------------------------- const -----------------------------------------------------------
     def __str__(self):
         return str(self.data)
     
     def svg_parse(self):
-        var  = "    <linearGradient " + parse_dict(self.data, self.internal, ["x1", "y1", "x2", "y2", "id"]) + ">\n"
+        var = "    <linearGradient " + parse_dict(self.data, self.internal, ["x1", "y1", "x2", "y2", "id"]) + ">\n"
         var += '      <stop offset = "{}" stop-color = "{}" stop-opacity = "{}"/>\n'.format(0, self["color1"], self.data.get("opacity1", 1))
         var += '      <stop offset = "{}" stop-color = "{}" stop-opacity = "{}"/>\n'.format(1, self["color2"], self.data.get("opacity2", 1))
         var += "    </linearGradient>\n"
         
         return var
         
-    #------------------- getter/setter ------------------- 
+    #-------------------------- getter/setter ------------------------------------------------------
     def __setitem__(self, key, val):
         self.data[key] = val
         
@@ -418,7 +418,7 @@ class group():
     All properies defined in the group are carried over to all items in that group if not overwritten.
     http://www.w3.org/TR/SVG/struct.html#GElement
     """
-    #------------------- ctor ------------------- 
+    #----------------------------- ctor ------------------------------------------------------------
     def __init__(self, **kwargs):
         self.default()
         self.internal = ["type"]
@@ -439,7 +439,7 @@ class group():
         elif svg_item["type"] == "item":
             self.items.append(svg_item)
     
-    #------------------- const ------------------- 
+    #----------------------------- const -----------------------------------------------------------
     def __str__(self):
         return str(self.data)
     
@@ -458,7 +458,7 @@ class group():
         var += "  </g>\n"
         return var
         
-    #------------------- getter/setter ------------------- 
+    #-------------------------- getter/setter ------------------------------------------------------
     def __setitem__(self, key, val):
         self.data[key] = val
         
@@ -470,7 +470,7 @@ class canvas():
     The outer most element.
     http://www.w3.org/TR/SVG/struct.html#SVGElement
     """
-    #------------------- ctor ------------------- 
+    #----------------------------- ctor ------------------------------------------------------------
     def __init__(self, **kwargs):
         self.default()
         self.internal = []
@@ -525,13 +525,13 @@ class canvas():
         
         self["size"] = (acc_x[-1], acc_y[-1])
         
-    #------------------- const ------------------- 
+    #----------------------------- const -----------------------------------------------------------
     def __str__(self):
         return str(self.data)
     
     def svg_parse(self):
         var = "<?xml version = \"1.0\"?>\n<svg "
-        var += parse_dict(self.data, self.internal) +">\n"
+        var += parse_dict(self.data, self.internal) + ">\n"
         
         if len(self.defs) != 0:
             var += "  <defs>\n"
@@ -553,7 +553,7 @@ class canvas():
     
     def display(self):
         bash("{} {}".format("display", self.filename))
-    #------------------- getter/setter ------------------- 
+    #-------------------------- getter/setter ------------------------------------------------------
     def __setitem__(self, key, val):
         self.data[key] = val
         unpack_lazy(self.data)

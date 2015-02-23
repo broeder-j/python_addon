@@ -1,6 +1,6 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
+# 
 # Author:  Mario S. Könz <mskoenz@gmx.net>
 # Date:    06.06.2013 20:49:45 EDT
 # File:    parameter.py
@@ -10,45 +10,46 @@ import re
 import sys
 import subprocess
 
-from .color import *
-from .helper import *
+from .color import * 
+from .helper import * 
 
-#------------------- parameter class ------------------- 
-class parameter_class(dict):
+#--------------------------- parameter class -------------------------------------------------------
+class parameter_class(namespace):
     """
     An useful class to parse argv. Is derived from dict.
     """
     def __init__(self):
         """
-        Initializes the class. Do not used self.reserved_names as keys for the dict. It will raise an error.
+        Initializes the class. Do not used self.res_names_ as keys for the dict. It will raise an error.
         """
-        super(dict, self).__init__()
-        self.reserved_names = ["arg", "flag"]
+        super(parameter_class, self).__init__()
+        self.clear()
         
-        #if a key has an "_" at the end it is treated as "hidden" in the sense that it isn't printed
-        self["print_"] = False
-        self["warn_"] = True
+    def clear(self):
+        namespace.clear(self)
+        # if a key has an "_" at the end it is treated as "hidden" in the sense that it isn't printed
+        self.res_names_ = ["arg", "flag", "res_names_"]
+        self.print_ = False
+        self.warn_ = True
     
     def __str__(self):
         """
         String conversion for printing. If they key "print_" is set to True all keys with an trailing underscore will be printed as well. Good for hiding technical/private keys.
         """
         out = ""
-        for key in sorted(self.keys()):
-            if not self["print_"]:
+        for key in sorted(namespace.keys(self)):
+            if not self.print_:
                 if key[-1] == "_":
                     continue
-            if key != sorted(self.keys())[0]: #prevent newline at the start
-                 out += "\n"
-            out += GREENB_ + str(key) + ":\t" + GREEN_ + str(self[key]) + NONE_
+            out += "{greenb}{:<11}{green} {}{none}\n".format(key + ":", self[key], **color)
             
-        return out
+        return out[:-1] # kill last "\n"
     
     def warn(self, text):
         """
         If the key "warn_" is True, the user will be warned if a key is overwritten or a flag set a second time.
         """
-        if self["warn_"]:
+        if self.warn_:
             WARNING(text)
     
     def read(self, argv):
@@ -59,143 +60,131 @@ class parameter_class(dict):
         - param = value
         - arg
         """
+        self.clear()
         pas = False
         
-        #------------------- regex for = notation ------------------- 
-        # "p=1", "p= 1", "p =1" and "p = 1" is valid notation, here I transform all to the form "p=1"
-        # "p= " and "p =" is invalid notation 
+        #----------------------- regex for = notation ----------------------------------------------
+        # "p = 1" is the only valid notation, since I cannot distinguish -u "a=1" from -u a=1
+        # but -u "a = 1" can be distinguished from -u a = 1
         
-        for i in range(len(argv)):
-            argv[i] = re.sub(" ", "##", argv[i])
-        
-        text = " ".join(argv)
-        text = re.sub(" ?= ?", "=", text)
-        
-        argv = text.split(" ")
-        
-        for i in range(len(argv)):
-            argv[i] = re.sub("##", " ", argv[i])
-        
-        # patch "string with spaces" or 'strings with spaces'
-        
-        
-        #------------------- some nice errors ------------------- 
-        for w in argv:
-            if w[0] == "-" and w.find("=") != -1:
-                ERROR("flags cannot be assigned with a equal sigh")
-            if w.find("=") != -1 and w.find("=") != w.rfind("="):
-                ERROR("too many = signs, check syntax")
-            if w[-1] == "=":
+        #------------------------ some nice errors -------------------------------------------------
+        last = len(argv) - 1
+        for w, i_w in zipi(argv):
+            if w[0] == "-" and i_w != last and argv[i_w + 1] == "=":
+                ERROR("flags cannot be assigned with a equal sign: {} =".format(w))
+            if w == "=" and i_w == last:
                 ERROR("no assignment after equal sign")
             if w[0] == "-" and len(w) == 1:
-                ERROR("syntax not correct, check -")
+                ERROR("single '-', syntax not correct")
                 
         
-        #------------------- normal set doesn't work bc of reserved_names check ------------------- 
-        dict.__setitem__(self, "arg", [])
-        dict.__setitem__(self, "flag", [])
+        #------------- start parsing --------------------------
+        self.arg = []
+        self.flag = []
         
-        for i in range(1, len(argv)):
+        i = 0
+        while i < last:
+            i += 1 # first argument isn't needed since it is the prog-name
             w = argv[i]
-            #checking if = sign
-            if w.find("=") != -1:
-                key, val = w.split("=")
+            w1 = "-" if i >= last else argv[i+1]
+            w2 = " " if i >= last - 1 else argv[i+2]
+            
+            # checking if = sign
+            if w1 == "=":
+                key, val = w, argv[i + 2]
                 if self.has_param(key):
                     self.warn("parameter {0} already set to {1} -> overwrite to {2}".format(key, self[key], val))
                 self[key] = to_number(val)
+                i += 2
                 continue
                 
-            if w[0] == '-' and len(w) > 1:
-                if i + 1 < len(argv) and argv[i+1][0] != '-' and argv[i+1].find("=") == -1: #parameter
+            if w[0] == "-":
+                w = w[1:]
+                if w1[0] != "-" and w2 != "=": # parameter
                     
-                    #------------------- just checking for false input ------------------- 
-                    if self.has_param(w[1:]):
-                        self.warn("parameter {0} already set to {1} -> overwrite to {2}".format(w[1:], self[w[1:]], argv[i+1]))
-                    #------------------- setting the parameter ------------------- 
-                    self[w[1:]] = to_number(argv[i+1])
-                    pas = True
-                else: #flag
-                    #------------------- just checking for false input ------------------- 
-                    if self.has_flag(w[1:]):
-                        self.warn("flag {0} was already set".format(w[1:]))
+                    #---------------- just checking for false input --------------------------------
+                    if w in self.param:
+                        self.warn("parameter {0} already set to {1} -> overwrite to {2}".format(w, self[w], w1))
+                    #------------------ setting the parameter --------------------------------------
+                    self[w] = to_number(w1)
+                    i += 1
+                else: # flag
+                    #---------------- just checking for false input --------------------------------
+                    if w in self.flag:
+                        self.warn("flag {0} was already set".format(w))
                     else:
-                        #------------------- setting the flag ------------------- 
-                        self["flag"].append(w[1:])
+                        #------------------- setting the flag --------------------------------------
+                        self.flag.append(w)
             else:
                 if pas:
                     pas = False
-                else: #arg
-                    #------------------- just checking for false input ------------------- 
-                    if self.has_arg(w):
+                else: # arg
+                    #---------------- just checking for false input --------------------------------
+                    if w in self.arg:
                         self.warn("arg {0} was already set".format(w))
                     else:
-                        #------------------- adding the arg ------------------- 
-                        self["arg"].append(w)
-                    
-    def has_arg(self, arg):
-        """
-        Checks if arg is in the parameter_class. An arg is an entry without a value, like a filename.
-        """
-        return arg in self["arg"]
-        
-    def has_flag(self, flag):
-        """
-        Checks if flag is set. A flag does not have a value. It is eighter on (has_flag -> True) or off (has_flag -> False)
-        """
-        return flag in self["flag"]
-    
-    def has_param(self, param):
-        """
-        Checks if the key param is set. A param is a key with a value.
-        """
-        return param in self.keys()
-    
-    def has_key(self, key):
-        """
-        Checks if key is a parameter, flag or arg. It does not the same as the dict.has_key function, since flags and args aren't technically stored as keys.
-        """
-        return self.has_arg(key) or self.has_flag(key) or self.has_param(key)
+                        #------------------- adding the arg ----------------------------------------
+                        self.arg.append(w)
     
     def __setitem__(self, key, val):
         """
-        Forwards to the dict.__setitem__ but makes sure that the reserved_names aren't used
+        Forwards to the namespace.__setitem__ but makes sure that the res_names_ aren't used
         """
-        if key in self.reserved_names: #guard reserved names
-            ERROR("do not use the following names: {0}".format(self.reserved_names))
+        if key in self.res_names_: # guard reserved names
+            ERROR("do not use the following names: {0}".format(self.res_names_))
         else:
-            dict.__setitem__(self, key, val)
+            namespace.__setitem__(self, key, val)
+    
+    @property
+    def param(self):
+        return [k for k in namespace.keys(self) if k not in self.res_names_]
+    
+    def keys(self):
+        return self.param + self.flag + self.arg
+    
+    def get(self, key, default = None):
+        if key in self.keys() + ["flag", "arg"]:
+            return self[key]
+        else:
+            return default
+    
+    def get_namespace(self):
+        res = namespace(self.__dict__)
+        del res.warn_
+        del res.print_
+        del res.res_names_
+        return res
     
 parameter = parameter_class()
 
-#------------------- parameter action ------------------- 
-def bash_if(flag, action):
+#--------------------------- parameter action ------------------------------------------------------
+def bash_if(flag, action, silent = False):
     """
     If the flag is in the parameter instance of parameter_class, the action will be executed by as a bash command if it is a string and be called otherwise (assumption action == python function with no args)
     """
-    if parameter.has_flag(flag):
-        if is_str(action): #normal bash cmd
-            bash(action)
-        elif is_function(action): #fct call
-            CYAN("called function: ")
+    if flag in parameter.flag:
+        if is_str(action): # normal bash cmd
+            bash(action, silent)
+        elif is_function(action): # fct call
+            if not silent:
+                CYAN("called function: ")
             action()
         else:
             ERROR("invalid action input in bash_if")
     return 0
 
-def bash(cmd):
+def bash(cmd, silent = False):
     """
     Just calls os.system and outputs the command.
     """
-    CYAN(cmd)
+    if not silent:
+        CYAN(cmd)
     os.system(cmd)
 
-def popen(cmd):
+def popen(cmd, silent = False):
     """
     If one needs the output of the bash-command, this function can provide it. Works exactly like bash(cmd) but returns the output as a string.
     """
-    CYAN(cmd)
-    part = cmd.split(" ")
-    if len(part) == 1: #simple cmd like ls
-        return subprocess.check_output(part[0])
-    else: #if the input is: "foo -arg -flag", the "foo" is the cmd and "-arg -flag" the args to this cmd
-        return subprocess.check_output([part[0], " ".join(part[1:])])
+    if not silent:
+        CYAN(cmd)
+    return subprocess.check_output(cmd, shell = True).decode("utf-8") # not safe!
