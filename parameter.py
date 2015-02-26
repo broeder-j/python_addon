@@ -181,10 +181,10 @@ def bash(cmd, silent = False):
         CYAN(cmd)
     os.system(cmd)
 
-def popen(cmd, silent = False):
+def popen(cmd, silent = False, **kwargs):
     """
     If one needs the output of the bash-command, this function can provide it. Works exactly like bash(cmd) but returns the output as a string.
     """
     if not silent:
         CYAN(cmd)
-    return subprocess.check_output(cmd, shell = True).decode("utf-8") # not safe!
+    return subprocess.check_output(cmd, shell = True, **kwargs).decode("utf-8") # not safe!
