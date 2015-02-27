@@ -173,13 +173,13 @@ def bash_if(flag, action, silent = False):
             ERROR("invalid action input in bash_if")
     return 0
 
-def bash(cmd, silent = False):
+def bash(cmd, silent = False, **kwargs):
     """
     Just calls os.system and outputs the command.
     """
     if not silent:
         CYAN(cmd)
-    os.system(cmd)
+    subprocess.call(cmd, shell = True, **kwargs)
 
 def popen(cmd, silent = False, **kwargs):
     """
@@ -187,4 +187,4 @@ def popen(cmd, silent = False, **kwargs):
     """
     if not silent:
         CYAN(cmd)
-    return subprocess.check_output(cmd, shell = True, **kwargs).decode("utf-8") # not safe!
+    return subprocess.check_output(cmd, shell = True, **kwargs).decode("utf-8")[:-1] #shell = True not safe!, [:-1]

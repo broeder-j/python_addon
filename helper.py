@@ -220,7 +220,9 @@ class namespace:
         return self.__dict__.items()
     
     def __eq__(self, rhs):
-        return rhs.__dict__ == self.__dict__
+        if hasattr(rhs, "__dict__"):
+            return rhs.__dict__ == self.__dict__
+        return False
     
     def assert_(self, arg, look = None):
         if look == None:
