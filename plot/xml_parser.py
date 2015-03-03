@@ -8,7 +8,7 @@
 from ..helper import *
 
 from .txt_to_xml import *
-from .xml_helper import *
+from ..xml_helper import *
 
 import xml.etree.ElementTree as xml
 import numpy as np
