@@ -192,7 +192,7 @@ def plot_handler(pns, p):
     
     for k, pipe in vpo.items():
         if k in opt.keys():
-            for fct in reversed(pipe):
+            for fct in reversed(pipe): # order: matrix mult convention
                 opt[k] = fct(k, opt, pns)
             #~ print(k, opt[k])
     

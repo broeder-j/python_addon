@@ -41,13 +41,13 @@ def label_translator(key, opt, pns):
             return -1
         elif is_str(val):
             if key in ["xerr", "yerr"]:
-                if val[0] == "+":
+                if val[0] == "p":
                     return opt[key[0]][idx] + to_number(val[1:])
-                elif val[0] == "-":
+                elif val[0] == "m":
                     return opt[key[0]][idx] - to_number(val[1:])
             
-            if val[0] == "#": #lazy expansion
-                val = "{:0>2}{}".format(idx, val[1:])
+            if "#" in val: #lazy expansion
+                val = val.replace("#", "{:0>2}".format(idx))
             
             if val not in pns.label:
                 ERROR("{} is not in {}".format(val, pns.label))

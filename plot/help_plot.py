@@ -25,8 +25,8 @@ def print_help(p):
     # data
     sd["x"] =      "param: can be an index, text or list of those. If not a list, the same 'x' will be used for all 'y'"
     sd["y"] =      "param: can be an index, text of list of those. All 'y' lines will be plotted"
-    sd["xerr"] =   "param: can be an index, text or list of those. If not a list, the same 'xerr' is used for all 'x'"
-    sd["yerr"] =   "param: can be an index, text or list of those. If not a list, the same 'yerr' is used for all 'y'"
+    sd["xerr"] =   "param: can be an index, text or list of those. If not a list, the same 'xerr' is used for all 'x'. Use p1 or m1 to select column relative to 'x'"
+    sd["yerr"] =   "param: can be an index, text or list of those. If not a list, the same 'yerr' is used for all 'y'. Use p1 or m1 to select column relative to 'y'"
     # param
     sd["parameter"] =    "param: string with {p} where p has to be in 'param' attributes. Will be formated against this dict."
     sd["parameter_loc"] ="param: [x,y] between 0 and one, defines where the parameter table is"
