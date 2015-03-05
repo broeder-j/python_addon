@@ -21,6 +21,7 @@ valid_options = [
     , "linreg"
     # destination
     , "o"
+    , "assoz_file"
     # style
     , "alpha"
     , "fontsize"

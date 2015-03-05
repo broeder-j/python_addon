@@ -49,6 +49,8 @@ def label_translator(key, opt, pns):
             if "#" in val: #lazy expansion
                 val = val.replace("#", "{:0>2}".format(idx))
             
+            
+            
             if val not in pns.label:
                 ERROR("{} is not in {}".format(val, pns.label))
             return pns.label.index(val)
@@ -61,7 +63,7 @@ def label_translator(key, opt, pns):
             val[lbl_i] = single_translate(lbl, lbl_i)
         return val
     else:
-        return single_translate(val)
+        return single_translate(val, None)
 
 def o_translator(key, opt, pns):
     if filetype(opt[key]) == None:

@@ -99,6 +99,9 @@ def filetype(file_):
 def path(file_):
     return os.path.dirname(file_)
 
+def relpath(from_, to = "."):
+    return os.path.relpath(from_, to)
+
 def create_folder(name):
     folder_line = name.split("/")
     prior = ""

@@ -132,6 +132,7 @@ def plot_handler(pns, p):
            , ("linreg", [expand])
            # destination
            , ("o", [o_translator])
+           , ("assoz_file", [])
            # style
            , ("alpha", [])
            , ("fontsize", [])
@@ -332,7 +333,6 @@ def plot(p = parameter):
     if p.get("usetex", 1):
         usetex()
     
-    
     if "conv" in p.keys():
         for file_ in files:
             txt_to_xml(file_, p.conv, p)
@@ -360,8 +360,18 @@ def plot(p = parameter):
         return
     
     
+    #------------------- read first file -------------------
     all_pns = []
-    for file_ in files:
+    file_ = files[0]
+    tree = file_to_tree(file_, p)
+    pns0 = tree_to_plot(tree, file_)
+    all_pns.append(pns0)
+    
+    #------------------- read assoz file -------------------
+    print(pns0)
+    p.assoz_file = pns0.plot_option[p.isel].get("assoz_file", [relpath(f, path(files[0])) for f in files[1:]])
+    for file_ in p.assoz_file:
+        file_ = path(files[0]) + "/" + file_
         tree = file_to_tree(file_, p)
         all_pns.append(tree_to_plot(tree, file_))
     
