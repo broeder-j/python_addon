@@ -31,13 +31,12 @@ def print_help(p):
     sd["parameter"] =    "param: string with {p} where p has to be in 'param' attributes. Will be formated against this dict."
     sd["parameter_loc"] ="param: [x,y] between 0 and one, defines where the parameter table is"
     # manipulation
-    sd["acc"] =    "param: can be in [0, 1] or a list of those. Specifies if the data and error of 'y' should be accumulated"
-    sd["triconv"] ="param: N is an integer that specifies half of the triangle base length. Resamples with triangular weight distribution to smooth curves. Its a low-pass-ish filter."
     sd["dsel"] = "param: eighter [start, spacing], [start, end, spacing] or a list of those. Only data with index in 'select' are used further for manipulators"
     sd["psel"] = "param: eighter [start, spacing], [start, end, spacing] or a list of those. Only data with index in 'select' are plotted. Happens after the manipulators"
     sd["linreg"] = "param: [start, end] or a list of those. Performs a linear regression and plots in in range 'linreg'. Doesn't have a 'ylabel'"
     # destination
-    sd["o"] =      "param: the plot will be saved in this location"
+    sd["o"] =          "param: the plot will be saved in this location"
+    sd["assoz_file"] = "param: saves additional files needed for the plot"
     # style
     sd["title"] =  "param: title of the plot, latex possible. One can use all parameter {key} in the xml-parameter"
     sd["fontsize"] =  "param: fontsize for parameter, legend, x/ylabel and title"

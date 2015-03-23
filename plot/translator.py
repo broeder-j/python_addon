@@ -40,8 +40,7 @@ def label_translator(key, opt, pns):
         if val == "none": #for error
             return None
         elif is_str(val):
-            if "#" in val: #lazy expansion
-                val = val.replace("#", "_{:0>2}_".format(idx))
+            
             
             for l in pns.label:
                 if to_number(l[1:3]) == idx:
@@ -50,7 +49,10 @@ def label_translator(key, opt, pns):
             else:
                 base = 0
             
-            val = re.sub("(?:(?:\\$)([\\d]+))", lambda match: pns.label[base + to_number(match.group(1))], val)
+            val = re.sub("(?:(?:#)([\\d]+))", lambda match: pns.label[base + to_number(match.group(1))], val)
+            
+            if "#" in val: #lazy expansion
+                val = val.replace("#", "_{:0>2}_".format(idx))
             
             return val
         else:

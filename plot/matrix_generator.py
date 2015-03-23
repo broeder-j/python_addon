@@ -8,6 +8,10 @@
 import numpy as np
 from ..helper import *
 
+#~ sd["acc"] =    "param: can be in [0, 1] or a list of those. Specifies if the data and error of 'y' should be accumulated"
+#~ sd["triconv"] ="param: N is an integer that specifies half of the triangle base length. Resamples with triangular weight distribution to smooth curves. Its a low-pass-ish filter."
+    
+
 def triangular_convolution(values, N):
     res = []
     weight = [min(i+1, 2*N+1-i) for i in range(2*N+1)] #triangular shape [1,2,3,2,1]

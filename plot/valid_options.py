@@ -14,8 +14,6 @@ valid_options = [
     , "parameter"
     , "parameter_loc"
     # manipulation
-    , "acc"
-    , "triconv"
     , "dsel"
     , "psel"
     , "linreg"

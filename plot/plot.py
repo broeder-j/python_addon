@@ -89,8 +89,6 @@ def plot_handler(pns, p):
            , ("parameter", [])
            , ("parameter_loc", [])
            # manipulation
-           , ("acc", [expand])
-           , ("triconv", [expand])
            , ("dsel", [expand])
            , ("psel", [expand])
            , ("linreg", [expand])
