@@ -11,6 +11,7 @@ from ..parameter import *
 from .help_plot import *
 from .xml_parser import *
 from .translator import *
+from .error_propagation import *
 from .import_pyplot import *
 from . import valid_options as vo
 
@@ -57,55 +58,18 @@ def set_lim(ax, opt):
     ax.set_xlim(lower[0], upper[0])
     ax.set_ylim(lower[1], upper[1])
 
-def apply_manipulator(data, idx, opt, error = False):
-    if "acc" in opt.keys():
-        if opt.acc[idx] == 1:
-            if error:
-                data = np.sqrt(np.add.accumulate(np.square(data)))
-            else:
-                data = np.add.accumulate(data)
-    
-    def triangular_convolution(values, N):
-        res = []
-        
-        weight = [min(i+1, 2*N+1-i) for i in range(2*N+1)] #triangular shape [1,2,3,2,1]
-        weight = weight[N:]+weight[:N] #shift it [3,2,1,1,2]
-        for v, v_i in zipi(values):
-            lower = max(0, v_i - N)
-            upper = min(len(values) - 1, v_i + N)
-            n = sum(weight[v_i-i] for i in range(lower, upper + 1))
-            s = sum(values[i]*weight[v_i-i] for i in range(lower, upper+1))
-            s /= n
-            res.append(s)
-            
-        return res
-    
-    if "triconv" in opt.keys():
-        if opt.triconv[idx] != 0:
-            if error:
-                data = triangular_convolution(data, opt.triconv[idx])
-            else:
-                data = triangular_convolution(data, opt.triconv[idx])
-        
-    return data
-
-def get_select(xdata, ydata, additional, y_i, opt, kw):
+def get_select(data, y_i, opt, kw):
     if kw in opt.keys():
         if len(opt[kw][y_i]) == 2:
             b, sp = opt[kw][y_i]
-            e = len(xdata)
+            e = len(data[0])
         else:
             b, e, sp = opt[kw][y_i]
         
-        xdata = xdata[b:e][0::sp]
-        ydata = ydata[b:e][0::sp]
+        for i in range(len(data)):
+            data[i] = data[i][b:e][0::sp]
         
-        if "xerr" in additional.keys():
-            additional["xerr"] = additional["xerr"][b:e][0::sp]
-        if "yerr" in additional.keys():
-            additional["yerr"] = additional["yerr"][b:e][0::sp]
-    
-    return xdata, ydata
+    return data
 
 def plot_handler(pns, p):
     #------------------- show available labels -------------------
@@ -166,7 +130,7 @@ def plot_handler(pns, p):
     opt.style = ["r^-", "b^-", "g^-", "y^-"] 
     opt.size_inch = [8.0, 6.0]
     spez = namespace()
-    spez.isel = p.get("isel", 0)
+    spez.isel = p.isel # has to be set
     spez.osel = p.get("osel", spez.isel)
     
     if pns != None and len(pns.plot_option) > spez.isel:
@@ -204,31 +168,28 @@ def plot_handler(pns, p):
     additional = {}
     plot_fct = ax.errorbar
     
-    
     for y, y_i in zipi(opt.y):
-        #------------------- set data -------------------
-        xdata = pns.data[opt.x[y_i]]
-        ydata = pns.data[y]
-        
-        if "xerr" in opt.keys():
-            additional["xerr"] = pns.data[opt.xerr[y_i]]
-        if "yerr" in opt.keys() and opt.yerr[y_i] != -1:
-            additional["yerr"] = pns.data[opt.yerr[y_i]]
-        
+        data = copy.deepcopy(pns.data)
         #------------------- apply manipulatros to data -------------------
-        xdata, ydata = get_select(xdata, ydata, additional, y_i, opt, "dsel")
+        data = get_select(data, y_i, opt, "dsel")
         
-        ydata = apply_manipulator(ydata, y_i, opt)
-        if "yerr" in opt.keys() and opt.yerr[y_i] != -1:
-            additional["yerr"] = apply_manipulator(additional["yerr"], y_i, opt, error = True)
+        #------------------- set data -------------------
+        xdata, xerr = calc_expr(pns.label, data, opt.x[y_i])
+        ydata, yerr = calc_expr(pns.label, data, opt.y[y_i])
+        
+        if xerr != None:
+            additional["xerr"] = xerr
+        if yerr != None:
+            additional["yerr"] = yerr
+        
+        #------------------- get plot selection -------------------
+        data = get_select(data, y_i, opt, "psel")
         
         #------------------- style -------------------
         additional["markersize"] = opt.markersize[y_i]
         additional["fmt"] = opt.style[0]
         opt.style.rotate(-1)
         
-        #------------------- get plot selection -------------------
-        xdata, ydata = get_select(xdata, ydata, additional, y_i, opt, "psel")
         plot_fct(xdata, ydata, label = label_chooser("ylabel", opt, pns, y_i), **additional)
         update_lim(xdata, ydata)
         #------------------- linreg -------------------
@@ -242,7 +203,6 @@ def plot_handler(pns, p):
 
     #------------------- set lims -------------------
     set_lim(ax, opt)
-    
     #------------------- set title -------------------
     if "title" in opt.keys():
         ax.set_title(opt.title.format(**pns.param), fontsize = opt.fontsize)
@@ -311,12 +271,12 @@ def join_pns(all_pns, p):
                 pns = ns
                 p.isel = p.get("isel", 1)
                 
-                pns.label = ["{:0>2}_{}".format(ns_i, l) for l in pns.label]
+                pns.label = ["_{:0>2}_{}".format(ns_i, l) for l in pns.label]
                 pns.data = list(pns.data)
                 s = set(pns.param.items())
             else:
                 pns.data += list(ns.data)
-                pns.label += ["{:0>2}_{}".format(ns_i, l) for l in ns.label]
+                pns.label += ["_{:0>2}_{}".format(ns_i, l) for l in ns.label]
                 s = s.intersection(set(ns.param.items()))
         
         # different parameters
@@ -368,13 +328,28 @@ def plot(p = parameter):
     all_pns.append(pns0)
     
     #------------------- read assoz file -------------------
-    print(pns0)
-    p.assoz_file = pns0.plot_option[p.isel].get("assoz_file", [relpath(f, path(files[0])) for f in files[1:]])
-    for file_ in p.assoz_file:
-        file_ = path(files[0]) + "/" + file_
-        tree = file_to_tree(file_, p)
-        all_pns.append(tree_to_plot(tree, file_))
+    if len(files) > 1:
+        if "parallel" in p.flag:
+            p.isel = p.get("isel", 0)
+            for file_ in files[1:]:
+                file_ = file_
+                tree = file_to_tree(file_, p)
+                all_pns.append(tree_to_plot(tree, file_))
+        else:
+            p.isel = p.get("isel", 1)
+            if p.isel < len(pns0.plot_option) and "assoz_file" in pns0.plot_option[p.isel].keys():
+                p.assoz_file = pns0.plot_option[p.isel]["assoz_file"]
+            else:
+                p.assoz_file = [relpath(f, path(files[0])) for f in files[1:]]
+            
+            for file_ in p.assoz_file:
+                file_ = path(files[0]) + "/" + file_
+                tree = file_to_tree(file_, p)
+                all_pns.append(tree_to_plot(tree, file_))
+    else:
+        p.isel = p.get("isel", 0)
     
+    #------------------- execute plot -------------------
     if "parallel" in p.flag:
         for pns in all_pns:
             plot_handler(pns, p)

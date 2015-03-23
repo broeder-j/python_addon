@@ -7,4 +7,5 @@ from .plot import *
 from .signal_slot import *
 from .git_count import *
 from .xml_helper import *
+from .parser import *
 #~ from .aesPickle import loads, dumps
