@@ -146,6 +146,7 @@ def plot_handler(pns, p):
     opt.fontsize = opt.get("fontsize", 12)
     opt.linreg = opt.get("linreg", "none")
     opt.markersize = opt.get("markersize", 6)
+    opt.usetex = p.usetex
     
     #=================== help and config print ===================
     if print_conf(p, opt):
@@ -288,7 +289,8 @@ def plot(p = parameter):
     p.flag = p.get("flag", []) #since a namespace may lack flag
     files = p.arg
     
-    if p.get("usetex", 1):
+    p.usetex = p.get("usetex", 1)
+    if p.usetex:
         usetex()
     
     if "conv" in p.keys():

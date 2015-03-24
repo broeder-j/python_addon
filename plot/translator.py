@@ -79,14 +79,17 @@ def legend_translator(key, opt, pns):
         ASSERT(val in range(len(legend_dict)))
         return val
 
-def latex_compatible(string):
-    return re.sub("_[\\d]{2}_", "", string)
+def latex_compatible(string, opt):
+    string = re.sub("_[\\d]{2}_", "", string)
+    if opt.usetex == True:
+        string = re.sub("_", "\_", string)
+    return string
 
 def label_styler(key, opt, pns):
     def single_style(val, idx):
         dict_ = copy.deepcopy(pns.param)
-        dict_["l"] = latex_compatible(opt[key[0]][idx])
-        dict_["L"] = string.capwords(latex_compatible(opt[key[0]][idx]))
+        dict_["l"] = latex_compatible(opt[key[0]][idx], opt)
+        dict_["L"] = string.capwords(latex_compatible(opt[key[0]][idx], opt))
         dict_["#"] = idx
         if "minor_param" in pns.keys() and key == "ylabel":
             dict_.update(pns.minor_param[idx])
@@ -105,7 +108,7 @@ def label_chooser(key, opt, pns, idx = 0):
     if key in opt.keys():
         return opt[key][idx]
     else:
-        return latex_compatible(opt[key[0]][idx])
+        return latex_compatible(opt[key[0]][idx], opt)
 
 def ticks_converter(key, opt, lower_min, upper_max):
     low, upper, incr = opt[key]
