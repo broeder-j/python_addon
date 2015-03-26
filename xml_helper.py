@@ -29,7 +29,7 @@ class xml_element():
     def __getattr__(self, key):
         res = self.root.findall(key)
         if len(res) == 0:
-            ERROR("child {} not found".format(key))
+            return None
         elif len(res) == 1:
             return xml_element(res[0])
         else:
@@ -39,12 +39,17 @@ class xml_element():
         return to_number(self.root.attrib[key])
     
     def __str__(self):
-        os = ""
-        os += self.root.tag
+        os  =   "{green}tag:       {greenb}{}\n".format(self.root.tag, **color)
+        os +=  "{yellow}parameter: {yellowb}{}\n".format(list(self.root.attrib.keys()), **color)
+        os +=    "{cyan}children:  {cyanb}{}{none}\n".format([elem.tag for elem in self.root], **color)
+        os += "{magenta}value:     {magentab}{}{none}".format(self.root.text, **color)
         return os
     
+    def value(self):
+        return self.root.text
+    
     def __repr__(self):
-        return self.__str__()
+        return "xml_element({})".format(self.root.tag)
     
 class xml_parser(xml_element):
     def __init__(self, file_):
