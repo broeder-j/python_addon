@@ -198,6 +198,11 @@ def split_clean(string, strip_quotes = False):
     else:
         return res
 
+def sstr(obj, length = 50):
+    sv = str(obj)
+    if len(sv) > length: # shorten too lengthong objects to size 60
+        sv = sv[:length//2] + " ...{}... ".format(len(sv) - length) + sv[-length//2:]
+    return sv
 #------------------ namespace (satisfies mapping interface) :D -------------------------------------
 # Namespaces are one honking great idea -- let's do more of those!
 class namespace:
@@ -241,9 +246,7 @@ class namespace:
             ERROR("{} {} are missing!".format(name, str(res)[1:-1]))
     
     def print_item(self, key):
-        sv = str(self.__dict__[key])
-        if len(sv) > 60: # shorten too long objects to size 60
-            sv = sv[:30] + "{redb} ...{}... {green}".format(len(sv) - 60, **color) + sv[-30:]
+        sv = sstr(self.__dict__[key])
         return "{greenb}{:<10}{none} = {green}{}{none}".format(key, sv, **color)
         
     def __str__(self):

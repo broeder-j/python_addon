@@ -34,19 +34,23 @@ class xml_element():
             return xml_element(res[0])
         else:
             return [xml_element(r) for r in res]
+            
     
     def __getitem__(self, key):
         return to_number(self.root.attrib[key])
     
-    def __str__(self):
-        os  =   "{green}tag:       {greenb}{}\n".format(self.root.tag, **color)
-        os +=  "{yellow}parameter: {yellowb}{}\n".format(list(self.root.attrib.keys()), **color)
-        os +=    "{cyan}children:  {cyanb}{}{none}\n".format([elem.tag for elem in self.root], **color)
-        os += "{magenta}value:     {magentab}{}{none}".format(self.root.text, **color)
-        return os
+    def info(self):
+        os  =   "{green}tag:       {greenb}{}\n".format(sstr(self.root.tag), **color)
+        os +=  "{yellow}parameter: {yellowb}{}\n".format(sstr(list(self.root.attrib.keys())), **color)
+        os +=    "{cyan}children:  {cyanb}{}{none}\n".format(sstr([elem.tag for elem in self.root]), **color)
+        os += "{magenta}value:     {magentab}{}{none}".format(sstr(self.root.text), **color)
+        print(os)
     
     def value(self):
-        return self.root.text
+        return to_number(self.root.text)
+    
+    def param(self):
+        return to_number(self.root.attrib)
     
     def __repr__(self):
         return "xml_element({})".format(self.root.tag)
@@ -60,3 +64,5 @@ class xml_parser(xml_element):
     def parse(self):
         self.tree = xml.parse(self.file_)
         self.root = self.tree.getroot()
+    
+    
